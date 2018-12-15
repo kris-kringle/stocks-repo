@@ -34,8 +34,6 @@ class gui:
         self.pull_list_dict = {}
         self.pull_list_stock_gain_dict = {}
 
-        self.tab1.bind('<Return>', self.parse)
-
 
         # Tab 1 - 1
         self.pull_stock_label = tk.Label(self.tab1, text=str("Check stock"), wraplength=150)
@@ -44,7 +42,8 @@ class gui:
         self.pull_stock_entry.insert(tk.END, self.stock)
         self.pull_stock_entry.bind('<Return>', self.update_pull_stock)
         self.pull_stock_entry.grid(row=1, column=1, pady=15)
-        self.pull_stock_button = tk.Button(self.tab1, text="Enter", command = self.update_pull_stock)
+        self.pull_stock_button = tk.Button(self.tab1, text="Enter")
+        self.pull_stock_button.bind('<Button 1>', self.update_pull_stock)
         self.pull_stock_button.grid(row=1, column=2, pady=15)
 
 
@@ -55,7 +54,8 @@ class gui:
         self.pull_list_date_entry.insert(tk.END, self.pull_list_date)
         self.pull_list_date_entry.bind('<Return>', self.update_pull_list_date)
         self.pull_list_date_entry.grid(row=1, column=2, pady=15)
-        self.pull_list_date_button = tk.Button(self.tab2, text="Enter", command = self.update_pull_list_date)
+        self.pull_list_date_button = tk.Button(self.tab2, text="Enter")
+        self.pull_list_date_button.bind('<Button 1>', self.update_pull_list_date)
         self.pull_list_date_button.grid(row=1, column=4, pady=15)
 
         self.csv_var = tk.StringVar(self.tab2)
@@ -237,6 +237,3 @@ class gui:
         np.savetxt("" + str(self.pull_list_date) + " decisions.csv", decision_stack, fmt = ['%s', '%s'], delimiter=",")
 
         print(decision_stack)
-
-    def parse(self, event):
-        print("You clicked?")
