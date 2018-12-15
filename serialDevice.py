@@ -1,5 +1,5 @@
 import serial
-import serial.tools.lsit_ports
+import serial.tools.list_ports
 
 class serial_device:
 
