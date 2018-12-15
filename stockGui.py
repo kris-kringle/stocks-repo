@@ -2,6 +2,8 @@ import tkinter as tk
 import datetime as dt
 import tkinter.ttk
 import matplotlib
+import numpy as np
+import os
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -234,6 +236,11 @@ class gui:
         decision_stack = np.concatenate((save_yes_decisions, save_maybe_decisions))
         decision_stack = np.concatenate((decision_stack, save_no_decisions))
 
-        np.savetxt("" + str(self.pull_list_date) + " decisions.csv", decision_stack, fmt = ['%s', '%s'], delimiter=",")
+        filepath = os.getcwd()
+        decisions_path = '\\decisions\\'
+        filepath = filepath + decisions_path
+
+
+        np.savetxt(os.path.join(filepath,"" + str(self.pull_list_date) + " decisions.csv"), decision_stack, fmt = ['%s', '%s'], delimiter=",")
 
         print(decision_stack)
