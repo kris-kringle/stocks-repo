@@ -1,22 +1,15 @@
 import pandas as pd
 pd.core.common.is_list_like = pd.api.types.is_list_like
 from pandas_datareader import data
-import numpy as np
-import matplotlib
 from matplotlib.ticker import FormatStrFormatter
 import matplotlib.pyplot as plt
-import csv
-from decimal import *
-from datetime import datetime
 from pandas import *
 from mpl_finance import *
 import matplotlib.dates as mdates
 from matplotlib.dates import MONDAY
 from matplotlib.dates import *
 import datetime as dt
-from random import *
 import iexfinance as iex
-from iexfinance import Stock
 from dateutil import parser
 
 class stock_data:

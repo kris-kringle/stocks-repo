@@ -1,19 +1,14 @@
 import tkinter as tk
-import numpy as np
 import pandas as pd
 import datetime as dt
 import matplotlib
 matplotlib.use('TkAgg')
-# from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-# from matplotlib.figure import Figure
-import glob, os
+import os
 import processStockData as psd
-import iexfinance
 import stockGui
 
 filepath = os.getcwd()
 
-# added comment to test git
 root = tk.Tk()
 my_gui = stockGui.gui(root)
 
