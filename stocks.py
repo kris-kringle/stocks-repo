@@ -8,7 +8,8 @@ import processStockData as psd
 import stockGui
 
 filepath = os.getcwd()
-
+csv_files_path = '\\csv_files\\'
+filepath = filepath + csv_files_path
 root = tk.Tk()
 my_gui = stockGui.gui(root)
 
@@ -46,7 +47,6 @@ while True:
     elif my_gui.state == "pull list":
 
         criteria = "weekly slope crossover up"
-        # print(my_gui.csv_variable)
         stock_list = pd.read_csv(os.path.join(filepath, my_gui.csv_variable + '.csv'), header=None)
         end = my_gui.pull_list_date
 
@@ -70,7 +70,6 @@ while True:
                         result = True
                     if result == True and len(stock_gain) != 0 and float(stock_gain.min()) > -20:
                         tested_stocks = tested_stocks.append(pd.Series(stock), ignore_index=True)
-                        #reg_data = reg_data.append(reg_data.ix[stock_params.row - 1])
                         my_gui.update_buy_list()
                         fig, stock_gain = stock_params.plot_chart()
                         my_gui.pull_list_dict.update({stock:fig})
@@ -85,7 +84,6 @@ while True:
                         my_gui.pull_list_stock_gain_dict.update({stock:stock_gain})
                         print("sell", sell_stocks)
 
-            #reg_data.to_csv('train_data - ' + str(end)[0:10] + '-no decision.csv')
             my_gui.update_pull_list_status()
             root.update_idletasks()
             root.update()

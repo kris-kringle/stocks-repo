@@ -34,14 +34,17 @@ class gui:
         self.pull_list_dict = {}
         self.pull_list_stock_gain_dict = {}
 
+        self.tab1.bind('<Return>', self.parse)
+
 
         # Tab 1 - 1
         self.pull_stock_label = tk.Label(self.tab1, text=str("Check stock"), wraplength=150)
         self.pull_stock_label.grid(row=1, column = 0, pady=15)
         self.pull_stock_entry = tk.Entry(self.tab1)
         self.pull_stock_entry.insert(tk.END, self.stock)
+        self.pull_stock_entry.bind('<Return>', self.update_pull_stock)
         self.pull_stock_entry.grid(row=1, column=1, pady=15)
-        self.pull_stock_button = tk.Button(self.tab1, text="Enter", command=self.update_pull_stock)
+        self.pull_stock_button = tk.Button(self.tab1, text="Enter", command = self.update_pull_stock)
         self.pull_stock_button.grid(row=1, column=2, pady=15)
 
 
@@ -50,8 +53,10 @@ class gui:
         self.pull_list_date_label.grid(row=1, column = 1, pady=15)
         self.pull_list_date_entry = tk.Entry(self.tab2)
         self.pull_list_date_entry.insert(tk.END, self.pull_list_date)
+        self.pull_list_date_entry.bind('<Return>', self.update_pull_list_date)
         self.pull_list_date_entry.grid(row=1, column=2, pady=15)
-        self.pull_list_date_button = tk.Button(self.tab2, text="Enter", command=self.update_pull_list_date)
+        self.pull_list_date_button = tk.Button(self.tab2, text="Enter", command = self.update_pull_list_date)
+        self.pull_list_date_button.grid(row=1, column=4, pady=15)
 
         self.csv_var = tk.StringVar(self.tab2)
         self.csv_var.set(self.csv_variable)  # default value
@@ -59,7 +64,7 @@ class gui:
         self.csv_menu = tk.OptionMenu(self.tab2, self.csv_var, "total_stock_list", "industry_stock_list", "XLE-energy", "XLB-materials", "XLI-industrials", "XLP-consumer discretionary", "XLY-consumer staples", "XLV-health care", "XLF-financials", "XLK-technology", "XLC-telecommunication", "XLU-utilities", "XLRE-real estate")
         self.csv_menu.grid(row=1, column=3, pady=15)
 
-        self.pull_list_date_button.grid(row=1, column=4, pady=15)
+
         self.pull_list_status_label = tk.Label(self.tab2, text="Status: " + str(self.pull_list_stock), wraplength=150)
         self.pull_list_status_label.grid(row=1, column = 5, pady=15)
 
@@ -165,7 +170,7 @@ class gui:
         self.stock_gain_listbox_tab2.insert(tk.END, "Average gain: " + str(round(stock_gain[0].mean(),1)) + "%")
 
 
-    def update_pull_list_date(self):
+    def update_pull_list_date(self, event):
 
         self.pull_list_date = self.pull_list_date_entry.get()
         self.buy_listbox.delete(0, tk.END)
@@ -176,7 +181,7 @@ class gui:
         self.state = "pull list"
 
 
-    def update_pull_stock(self):
+    def update_pull_stock(self, event):
 
         self.stock = self.pull_stock_entry.get()
         self.state = "pull"
@@ -232,3 +237,6 @@ class gui:
         np.savetxt("" + str(self.pull_list_date) + " decisions.csv", decision_stack, fmt = ['%s', '%s'], delimiter=",")
 
         print(decision_stack)
+
+    def parse(self, event):
+        print("You clicked?")
