@@ -347,7 +347,6 @@ class stock_data:
         trend_status = [None] * 8
         row1, col1 = self.short_norm_stock_df.shape
 
-        # print(self.short_norm_stock_df['close'][row1 - 6:row1 - 1].mean(), self.short_norm_stock_df['close'][row1 - 20 - 6:row1 - 20 - 1].mean())
         if self.short_norm_stock_df['close'][row1 - 6:row1 - 1].mean() > self.short_norm_stock_df['close'][row1 - 20 - 6:row1 - 20 - 1].mean():
             trend_status[0] = 'Up'
         else:
@@ -358,15 +357,14 @@ class stock_data:
         else:
             trend_status[1] = 'Down'
 
-        if self.short_norm_stock_df['obv_volume'][row1 - 6:row1 - 1].mean() > self.short_norm_stock_df['obv_volume'][row1 - 20 - 6:row1 - 20 - 1].mean():
+        if self.short_norm_stock_df['obv_volume'][row1 - 1] > self.short_norm_stock_df['obv_volume'][row1 - 20 - 1]:
             trend_status[2] = 'Up'
         else:
             trend_status[2] = 'Down'
 
-        # print(self.short_norm_stock_df['obv_volume'][row1 - 6:row1 - 1].mean(), self.short_norm_stock_df['obv_volume'][row1 - 20 - 6:row1 - 20 - 1].mean())
-        if self.short_norm_stock_df['obv_volume'][row1 - 6:row1 - 1].mean() > self.short_norm_stock_df['obv_volume'][row1 - 20 - 6:row1 - 20 - 1].mean():
+        if self.short_norm_stock_df['obv_volume'][row1 - 1] > self.short_norm_stock_df['obv_volume'][row1 - 20 - 1]:
             trend_status[3] = 'Up'
         else:
             trend_status[3] = 'Down'
-        # print(trend_status)
+
         return trend_status
