@@ -23,6 +23,7 @@ class gui:
         self.note.add(self.tab3, text="Tab Three")
         self.note.grid(row=0, column=0)
         self.index = ""
+        self.trend_status = [None] * 6
 
         self.stock = "DIA"
         self.stock_gain = 0
@@ -34,6 +35,7 @@ class gui:
         self.pull_list_stock = ""
         self.state = ""
         self.pull_list_dict = {}
+        self.pull_list_trend_dict = {}
         self.pull_list_stock_gain_dict = {}
 
 
@@ -47,6 +49,31 @@ class gui:
         self.pull_stock_button = tk.Button(self.tab1, text="Enter")
         self.pull_stock_button.bind('<Button 1>', self.update_pull_stock)
         self.pull_stock_button.grid(row=1, column=2, pady=15)
+
+        self.stock_gain_listbox_tab1 = tk.Listbox(self.tab1)
+        self.stock_gain_listbox_tab1.insert(tk.END, "stock_gain")
+        self.stock_gain_listbox_tab1.grid(row=13, column=2, rowspan = 10, pady=15)
+
+
+        self.one_month_trend_text_1 = tk.Label(self.tab1, text=str("One Month Price Trend"))
+        self.one_month_trend_text_1.grid(row=13, column = 3, pady=15)
+        self.one_month_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[0]))
+        self.one_month_trend_value_1.grid(row=13, column = 4, pady=15)
+
+        self.three_month_trend_text_1 = tk.Label(self.tab1, text=str("Three Month Price Trend"))
+        self.three_month_trend_text_1.grid(row=14, column = 3, pady=15)
+        self.three_month_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[1]))
+        self.three_month_trend_value_1.grid(row=14, column = 4, pady=15)
+
+        self.one_month_obv_trend_text_1 = tk.Label(self.tab1, text=str("One Month OBV Trend"))
+        self.one_month_obv_trend_text_1.grid(row=15, column = 3, pady=15)
+        self.one_month_obv_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[2]))
+        self.one_month_obv_trend_value_1.grid(row=15, column = 4, pady=15)
+
+        self.three_month_obv_trend_text_1 = tk.Label(self.tab1, text=str("Three Month OBV Trend"))
+        self.three_month_obv_trend_text_1.grid(row=16, column = 3, pady=15)
+        self.three_month_obv_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[3]))
+        self.three_month_obv_trend_value_1.grid(row=16, column = 4, pady=15)
 
 
         # Tab 2
@@ -93,15 +120,31 @@ class gui:
         self.update_decisions_button = tk.Button(self.tab2, text="Save Decisions", command=self.save_stock_decisions)
         self.update_decisions_button.grid(row=7, column=9, pady=15)
 
-        self.stock_gain_listbox_tab1 = tk.Listbox(self.tab1)
-        self.stock_gain_listbox_tab1.insert(tk.END, "stock_gain")
-        self.stock_gain_listbox_tab1.grid(row=13, column=2, pady=15)
-
         self.stock_gain_listbox_tab2 = tk.Listbox(self.tab2)
         self.stock_gain_listbox_tab2.insert(tk.END, "stock_gain")
-        self.stock_gain_listbox_tab2.grid(row=13, column=2, pady=15)
+        self.stock_gain_listbox_tab2.grid(row=7, column=2, rowspan = 10, pady=15)
 
         self.test_var = ""
+
+        self.one_month_trend_text_2 = tk.Label(self.tab2, text=str("One Month Price Trend"))
+        self.one_month_trend_text_2.grid(row=7, column = 3, pady=15)
+        self.one_month_trend_value_2 = tk.Label(self.tab2, text=str("N/A"))
+        self.one_month_trend_value_2.grid(row=7, column = 4, pady=15)
+
+        self.three_month_trend_text_2 = tk.Label(self.tab2, text=str("Three Month Price Trend"))
+        self.three_month_trend_text_2.grid(row=14, column = 3, pady=15)
+        self.three_month_trend_value_2 = tk.Label(self.tab2, text=str("N/A"))
+        self.three_month_trend_value_2.grid(row=14, column = 4, pady=15)
+
+        self.one_month_obv_trend_text_2 = tk.Label(self.tab2, text=str("One Month OBV Trend"))
+        self.one_month_obv_trend_text_2.grid(row=15, column = 3, pady=15)
+        self.one_month_obv_trend_value_2 = tk.Label(self.tab2, text=str("N/A"))
+        self.one_month_obv_trend_value_2.grid(row=15, column = 4, pady=15)
+
+        self.three_month_obv_trend_text_2 = tk.Label(self.tab2, text=str("Three Month OBV Trend"))
+        self.three_month_obv_trend_text_2.grid(row=16, column = 3, pady=15)
+        self.three_month_obv_trend_value_2 = tk.Label(self.tab2, text=str("N/A"))
+        self.three_month_obv_trend_value_2.grid(row=16, column = 4, pady=15)
 
 
     def update_every_time(self):
@@ -134,6 +177,16 @@ class gui:
         if selected == True and (self.pull_list_stock != old_stock):
             self.plot_fig_tab2(self.pull_list_dict[self.pull_list_stock])
             self.plot_stock_gain_tab2(self.pull_list_stock_gain_dict[self.pull_list_stock])
+            self.one_month_trend_value_2.config(text=str(self.pull_list_trend_dict[self.pull_list_stock][0]))
+            self.three_month_trend_value_2.config(text=str(self.pull_list_trend_dict[self.pull_list_stock][1]))
+            self.one_month_obv_trend_value_2.config(text=str(self.pull_list_trend_dict[self.pull_list_stock][2]))
+            self.three_month_obv_trend_value_2.config(text=str(self.pull_list_trend_dict[self.pull_list_stock][3]))
+
+
+        self.one_month_trend_value_1.config(text=str(self.trend_status[0]))
+        self.three_month_trend_value_1.config(text=str(self.trend_status[1]))
+        self.one_month_obv_trend_value_1.config(text=str(self.trend_status[2]))
+        self.three_month_obv_trend_value_1.config(text=str(self.trend_status[3]))
 
 
     def update_pull_list_status(self):
@@ -212,6 +265,7 @@ class gui:
     def update_sell_list(self):
 
         self.sell_listbox.insert(tk.END, self.pull_list_stock)
+
 
     def save_stock_decisions(self):
 

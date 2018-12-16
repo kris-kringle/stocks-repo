@@ -17,7 +17,6 @@ class stock_data:
     def __init__(self):
         self.now = dt.datetime.now()
         self.start = datetime(self.now.year - 4, 1, 1)
-        # self.end = datetime(self.now.year, self.now.month, self.now.day)
         self.pull_years = 2
         self.row = 0
         self.stock = ""
@@ -25,6 +24,8 @@ class stock_data:
         self.stock_df = pd.DataFrame()
         self.short_stock_df = pd.DataFrame()
         self.short_norm_stock_df = pd.DataFrame()
+
+        self.trend_status = [None] * 6
 
     def hist_prices(self, stock, end):
 
@@ -152,17 +153,19 @@ class stock_data:
             env_percent += .0005
 
         pd.options.mode.chained_assignment = None
-        self.short_norm_stock_df['obv_volume'] = 0
-        self.short_norm_stock_df['obv_volume'][0] = self.short_norm_stock_df['volume'][0]
-        for i in range(1, self.row):
-            if self.short_norm_stock_df['close'][i] > self.short_norm_stock_df['close'][i - 1]:
-                self.short_norm_stock_df['obv_volume'][i] = self.short_norm_stock_df['obv_volume'][i - 1] + self.short_norm_stock_df['volume'][i]
-            elif self.short_norm_stock_df['close'][i] < self.short_norm_stock_df['close'][i - 1]:
-                self.short_norm_stock_df['obv_volume'][i] = self.short_norm_stock_df['obv_volume'][i - 1] - self.short_norm_stock_df['volume'][i]
-            else:
-                self.short_norm_stock_df['obv_volume'][i] = self.short_norm_stock_df['obv_volume'][i - 1]
-                self.short_norm_stock_df['volume'] = self.short_norm_stock_df['volume'] / self.short_norm_stock_df['volume'].max()
-                self.short_norm_stock_df['obv_volume'] = self.short_norm_stock_df['obv_volume'] / self.short_norm_stock_df['obv_volume'].max()
+        # print(self.short_norm_stock_df['obv_volume'])
+        # self.short_norm_stock_df['obv_volume'] = 0
+        # self.short_norm_stock_df['obv_volume'][0] = self.short_norm_stock_df['volume'][0]
+        # for i in range(1, self.row):
+        #     if self.short_norm_stock_df['close'][i] > self.short_norm_stock_df['close'][i - 1]:
+        #         self.short_norm_stock_df['obv_volume'][i] = self.short_norm_stock_df['obv_volume'][i - 1] + self.short_norm_stock_df['volume'][i]
+        #     elif self.short_norm_stock_df['close'][i] < self.short_norm_stock_df['close'][i - 1]:
+        #         self.short_norm_stock_df['obv_volume'][i] = self.short_norm_stock_df['obv_volume'][i - 1] - self.short_norm_stock_df['volume'][i]
+        #     else:
+        #         self.short_norm_stock_df['obv_volume'][i] = self.short_norm_stock_df['obv_volume'][i - 1]
+        # self.short_norm_stock_df['volume'] = self.short_norm_stock_df['volume'] / self.short_norm_stock_df['volume'].max()
+        # self.short_norm_stock_df['obv_volume'] = self.short_norm_stock_df['obv_volume'] / self.short_norm_stock_df['obv_volume'].max()
+        # print(self.short_norm_stock_df['obv_volume'])
         avg_volume = self.short_norm_stock_df['volume'][self.row - 10:].mean()
         self.short_norm_stock_df['close_from_top_env'] = self.short_norm_stock_df['ema26_highenv'] - self.short_norm_stock_df['close']
         if self.row > 5:
@@ -338,3 +341,32 @@ class stock_data:
                 self.short_norm_stock_df['weekly_black_deriv'][effective_row-1] > self.short_norm_stock_df['weekly_red_deriv'][effective_row-1]:
             passCriteria = True
         return passCriteria
+
+    def check_trends(self):
+
+        trend_status = [None] * 8
+        row1, col1 = self.short_norm_stock_df.shape
+
+        # print(self.short_norm_stock_df['close'][row1 - 6:row1 - 1].mean(), self.short_norm_stock_df['close'][row1 - 20 - 6:row1 - 20 - 1].mean())
+        if self.short_norm_stock_df['close'][row1 - 6:row1 - 1].mean() > self.short_norm_stock_df['close'][row1 - 20 - 6:row1 - 20 - 1].mean():
+            trend_status[0] = 'Up'
+        else:
+            trend_status[0] = 'Down'
+
+        if self.short_norm_stock_df['close'][row1 - 6:row1 - 1].mean() > self.short_norm_stock_df['close'][row1 - 20 - 6:row1 - 20 - 1].mean():
+            trend_status[1] = 'Up'
+        else:
+            trend_status[1] = 'Down'
+
+        if self.short_norm_stock_df['obv_volume'][row1 - 6:row1 - 1].mean() > self.short_norm_stock_df['obv_volume'][row1 - 20 - 6:row1 - 20 - 1].mean():
+            trend_status[2] = 'Up'
+        else:
+            trend_status[2] = 'Down'
+
+        # print(self.short_norm_stock_df['obv_volume'][row1 - 6:row1 - 1].mean(), self.short_norm_stock_df['obv_volume'][row1 - 20 - 6:row1 - 20 - 1].mean())
+        if self.short_norm_stock_df['obv_volume'][row1 - 6:row1 - 1].mean() > self.short_norm_stock_df['obv_volume'][row1 - 20 - 6:row1 - 20 - 1].mean():
+            trend_status[3] = 'Up'
+        else:
+            trend_status[3] = 'Down'
+        # print(trend_status)
+        return trend_status

@@ -22,6 +22,7 @@ if err == False:
     my_gui.plot_stock_gain_tab1(stock_gain)
     my_gui.plot_fig_tab2(fig)
     my_gui.plot_stock_gain_tab2(stock_gain)
+    my_gui.trend_status = stock_params.check_trends()
 
 old_stock = ""
 
@@ -42,6 +43,8 @@ while True:
                 fig, stock_gain = stock_params.plot_chart()
                 my_gui.plot_stock_gain_tab1(stock_gain)
                 my_gui.plot_fig_tab1(fig)
+                my_gui.trend_status = stock_params.check_trends()
+                print(my_gui.trend_status)
             old_stock = my_gui.stock
 
     elif my_gui.state == "pull list":
@@ -72,6 +75,7 @@ while True:
                         tested_stocks = tested_stocks.append(pd.Series(stock), ignore_index=True)
                         my_gui.update_buy_list()
                         fig, stock_gain = stock_params.plot_chart()
+                        my_gui.pull_list_trend_dict.update({stock: stock_params.check_trends()})
                         my_gui.pull_list_dict.update({stock:fig})
                         my_gui.pull_list_stock_gain_dict.update({stock: stock_gain})
                         print("possible buy", tested_stocks)
@@ -80,6 +84,7 @@ while True:
                         sell_stocks = sell_stocks.append(pd.Series(stock), ignore_index=True)
                         my_gui.update_sell_list()
                         fig, stock_gain = stock_params.plot_chart()
+                        my_gui.pull_list_trend_dict.update({stock:stock_params.check_trends()})
                         my_gui.pull_list_dict.update({stock:fig})
                         my_gui.pull_list_stock_gain_dict.update({stock:stock_gain})
                         print("sell", sell_stocks)
