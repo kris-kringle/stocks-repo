@@ -1,9 +1,10 @@
 import serial
 import serial.tools.list_ports
+import time
 
 class serial_device:
 
-    def __init__(self, description, send_start = '', send_end = '\n', return_start = '', return_end = '\n', baudrate = 9600, serialNumber = None):
+    def __init__(self, description, send_start = "$", send_end = "^", return_start = "#", return_end = "*", baudrate = 9600, serialNumber = None):
 
         self.send_start_char = send_start
         self.send_end_char = send_end
@@ -11,7 +12,9 @@ class serial_device:
         self.return_end_char = return_end
 
         self.serial_com_port = self.grabPort(description, serialNumber)
-        self.ser = serial.Serial(self.serial_com_port, baudrate = baudrate)
+        self.ser = serial.Serial(self.serial_com_port, baudrate = baudrate, timeout = 2)
+
+        time.sleep(1)
 
 
     def grabPort(self, _description, serial_number):
@@ -21,12 +24,15 @@ class serial_device:
             raise Exception('No ports found')
 
         for p in ports:
-            if p.description == _description:
+            if p.description.find(_description) >= 0:
                 if serial_number is not None and p.serial_number == serial_number:
                     my_port = p.device
                     break
-            if p == ports[len(ports)]:
-                raise Exception('No port with given description found')
+                elif serial_number is None:
+                    my_port = p.device
+                    break
+            if p == ports[len(ports) - 1]:
+                raise Exception('No port with given description found - ' + _description)
 
         return my_port
 
@@ -38,8 +44,8 @@ class serial_device:
 
     def decoded_read(self):
 
-        command_read = self.ser.read_until(self.return_end_char.decode('utf-8'))
-        command_read = command_read[len(self.return_start_char):len(command_read) - len(self.return_end_char)]
+        command_read = self.ser.read_until(self.return_end_char.encode('utf-8'))
+        command_read = command_read[len(self.return_start_char) + 1:len(command_read) - len(self.return_end_char)].decode('utf-8')
 
         return command_read
 
