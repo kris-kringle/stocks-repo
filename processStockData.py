@@ -367,6 +367,6 @@ class stock_data:
         else:
             trend_status[3] = 'Down'
 
-        print(self.short_norm_stock_df['obv_volume'][row1 - 1],self.short_norm_stock_df['obv_volume'][row1 - 20 - 1],self.short_norm_stock_df['obv_volume'][row1 - 1],self.short_norm_stock_df['obv_volume'][row1 - 60 - 1])
+        # print(self.short_norm_stock_df['obv_volume'][row1 - 1],self.short_norm_stock_df['obv_volume'][row1 - 20 - 1],self.short_norm_stock_df['obv_volume'][row1 - 1],self.short_norm_stock_df['obv_volume'][row1 - 60 - 1])
 
         return trend_status
