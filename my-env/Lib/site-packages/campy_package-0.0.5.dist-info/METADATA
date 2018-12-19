@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: campy-package
+Version: 0.0.5
+Summary: Class to grab frames from Basler cameras
+Home-page: UNKNOWN
+Author: Kris Kurtin
+Author-email: kriskurtin@gmail.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+
+# Basler Camera Package
+
+
+
