@@ -4,7 +4,7 @@ import time
 
 class serial_device:
 
-    def __init__(self, description, send_start = "$", send_end = "^", return_start = "#", return_end = "*", baudrate = 9600, serialNumber = None):
+    def __init__(self, description, send_start = "", send_end = "*", return_start = "", return_end = "*", baudrate = 9600, serialNumber = None):
 
         self.send_start_char = send_start
         self.send_end_char = send_end
@@ -45,7 +45,8 @@ class serial_device:
     def decoded_read(self):
 
         command_read = self.ser.read_until(self.return_end_char.encode('utf-8'))
-        command_read = command_read[len(self.return_start_char) + 1:len(command_read) - len(self.return_end_char)].decode('utf-8')
+        command_read = command_read.decode('utf-8')
+        command_read = command_read[len(self.return_start_char):len(command_read) - len(self.return_end_char)]
 
         return command_read
 
