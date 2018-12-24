@@ -63,12 +63,12 @@ while True:
             stock = stock_list[0][x]
             err = stock_params.hist_prices(stock, my_gui.pull_list_date)
             if err == False:
-                stock_params.weekly_slope_crossover_history()
+                stock_params.slope_crossover_history()
                 my_gui.pull_list_stock = stock
 
                 print(stock + " - " + str(stock_params.short_norm_stock_df.index[stock_params.row-1]))
                 if stock_params.row > 200:
-                    result = stock_params.weekly_slope_crossover_zero(stock_params.row - 1)
+                    result = stock_params.weekly_black_and_red_above_zero(stock_params.row - 1)
                     if my_gui.csv_variable != "total_stock_list":
                         result = True
                     if result == True and len(stock_gain) != 0 and float(stock_gain.min()) > -20:
@@ -79,7 +79,7 @@ while True:
                         my_gui.pull_list_dict.update({stock:fig})
                         my_gui.pull_list_stock_gain_dict.update({stock: stock_gain})
                         print("possible buy", tested_stocks)
-                    result = stock_params.weekly_slope_crossover_down(stock_params.row - 1)
+                    result = stock_params.weekly_black_or_red_below_zero(stock_params.row - 1)
                     if result == True:
                         sell_stocks = sell_stocks.append(pd.Series(stock), ignore_index=True)
                         my_gui.update_sell_list()
