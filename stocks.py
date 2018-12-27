@@ -68,7 +68,7 @@ while True:
 
                 print(stock + " - " + str(stock_params.short_norm_stock_df.index[stock_params.row-1]))
                 if stock_params.row > 200:
-                    result = stock_params.weekly_black_and_red_above_zero(stock_params.row - 1)
+                    result = stock_params.weekly_black_slope_crossover_zero(stock_params.row - 1)
                     if my_gui.csv_variable != "total_stock_list":
                         result = True
                     if result == True and len(stock_gain) != 0 and float(stock_gain.min()) > -20:
@@ -79,8 +79,9 @@ while True:
                         my_gui.pull_list_dict.update({stock:fig})
                         my_gui.pull_list_stock_gain_dict.update({stock: stock_gain})
                         print("possible buy", tested_stocks)
-                    result = stock_params.weekly_black_or_red_below_zero(stock_params.row - 1)
-                    if result == True:
+                    result = stock_params.weekly_black_slope_cross_below_red(stock_params.row - 1)
+                    result2 = stock_params.weekly_black_slope_cross_below_zero(stock_params.row - 1)
+                    if result == True or result2 == True:
                         sell_stocks = sell_stocks.append(pd.Series(stock), ignore_index=True)
                         my_gui.update_sell_list()
                         fig, stock_gain = stock_params.plot_chart()

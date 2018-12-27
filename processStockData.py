@@ -182,7 +182,7 @@ class stock_data:
 
         f1 = plt.figure(figsize=(10, 6))
 
-        ax = plt.axes([0.05, 0.52, 0.9, 0.4])
+        ax = plt.axes([0.05, 0.7, 0.9, 0.4])
         ax.plot(self.short_norm_stock_df.index, self.short_norm_stock_df['ema26'], color='purple', label='ema26', linewidth=1.0)
         ax.plot(self.short_norm_stock_df.index, self.short_norm_stock_df['ema26_highenv'], color='purple', label='ema26_highenv', linewidth=1.0)
         ax.plot(self.short_norm_stock_df.index, self.short_norm_stock_df['ema26_lowenv'], color='purple', label='ema26_lowenv', linewidth=1.0)
@@ -269,38 +269,31 @@ class stock_data:
         print(round(stock_gain, 1))
         print("Mean gain: ", round(stock_gain.mean(), 1), "%")
 
-        result = False
         i = 0
         for i in range(1, self.row):
-            if self.weekly_black_and_red_above_zero(i) == True and result == False:
+            if self.weekly_black_slope_crossover_zero(i) == True:
+                print(self.short_norm_stock_df.index[i])
                 ax.axvline(x=str(self.short_norm_stock_df.index[i]), color='green', linewidth=1)
                 ax3.axvline(x=str(self.short_norm_stock_df.index[i]), color='green', linewidth=1)
                 ax4.axvline(x=str(self.short_norm_stock_df.index[i]), color='green', linewidth=1)
                 #ax5.axvline(x=str(self.short_norm_stock_df.index[i]), color='green', linewidth=1)
                 ax6.axvline(x=str(self.short_norm_stock_df.index[i]), color='green', linewidth=1)
-                result = True
-            elif self.weekly_black_and_red_above_zero(i) == False:
-                result = False
 
-        result = False
         i = 0
         for i in range(1, self.row):
-            if self.weekly_black_or_red_below_zero(i) == True and result == False:
+            if self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i) == True:
                 ax.axvline(x=str(self.short_norm_stock_df.index[i]), color='red', linewidth=1)
                 ax3.axvline(x=str(self.short_norm_stock_df.index[i]), color='red', linewidth=1)
                 ax4.axvline(x=str(self.short_norm_stock_df.index[i]), color='red', linewidth=1)
                 #ax5.axvline(x=str(self.short_norm_stock_df.index[i]), color='red', linewidth=1)
                 ax6.axvline(x=str(self.short_norm_stock_df.index[i]), color='red', linewidth=1)
-                result = True
-            elif self.weekly_black_or_red_below_zero(i) == False:
-                result = False
 
         return f1, stock_gain
 
     def weekly_black_slope_cross_below_red(self, effective_row):
         passCriteria = False
-        if self.short_norm_stock_df['weekly_black_deriv'][effective_row] > self.short_norm_stock_df['weekly_red_deriv'][effective_row] and \
-                self.short_norm_stock_df['weekly_black_deriv'][effective_row-1] < self.short_norm_stock_df['weekly_red_deriv'][effective_row-1]:
+        if self.short_norm_stock_df['weekly_black_deriv'][effective_row] < self.short_norm_stock_df['weekly_red_deriv'][effective_row] and \
+                self.short_norm_stock_df['weekly_black_deriv'][effective_row-1] > self.short_norm_stock_df['weekly_red_deriv'][effective_row-1]:
             passCriteria = True
         return passCriteria
 
@@ -335,11 +328,13 @@ class stock_data:
         crossed_up = False
         stock_gain = pd.DataFrame()
         for i in range(1, self.row):
-            if self.weekly_black_and_red_above_zero(i) == True and crossed_up == False:
-                price_up = self.short_norm_stock_df['close'][i - 1]
+            if self.weekly_black_slope_crossover_zero(i) == True and crossed_up == False:
+                print("up", self.short_norm_stock_df.index[i])
+                price_up = self.short_norm_stock_df['close'][i]
+                print(price_up)
                 crossed_up = True
-
-            if self.weekly_black_or_red_below_zero(i) == True and crossed_up == True:
+            elif (self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i)) and crossed_up == True:
+                print("down", self.short_norm_stock_df.index[i])
                 price_down = self.short_norm_stock_df['close'][i]
                 stock_gain = stock_gain.append(pd.Series((price_down - price_up) / price_up), ignore_index=True)
                 crossed_up = False
@@ -351,8 +346,8 @@ class stock_data:
 
     def weekly_black_slope_crossover_red_slope(self, effective_row):
         passCriteria = False
-        if self.short_norm_stock_df['weekly_black_deriv'][effective_row] < self.short_norm_stock_df['weekly_red_deriv'][effective_row] and \
-                self.short_norm_stock_df['weekly_black_deriv'][effective_row-1] > self.short_norm_stock_df['weekly_red_deriv'][effective_row-1]:
+        if self.short_norm_stock_df['weekly_black_deriv'][effective_row] > self.short_norm_stock_df['weekly_red_deriv'][effective_row] and \
+                self.short_norm_stock_df['weekly_black_deriv'][effective_row-1] < self.short_norm_stock_df['weekly_red_deriv'][effective_row-1]:
             passCriteria = True
         return passCriteria
 

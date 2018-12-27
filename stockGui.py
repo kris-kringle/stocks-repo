@@ -52,28 +52,28 @@ class gui:
 
         self.stock_gain_listbox_tab1 = tk.Listbox(self.tab1)
         self.stock_gain_listbox_tab1.insert(tk.END, "stock_gain")
-        self.stock_gain_listbox_tab1.grid(row=13, column=2, rowspan = 10, pady=15)
+        self.stock_gain_listbox_tab1.grid(row=13, column=7, rowspan = 10, pady=15)
 
 
         self.one_month_trend_text_1 = tk.Label(self.tab1, text=str("One Month Price Trend"))
-        self.one_month_trend_text_1.grid(row=13, column = 3, pady=15)
+        self.one_month_trend_text_1.grid(row=13, column = 8, pady=15)
         self.one_month_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[0]))
-        self.one_month_trend_value_1.grid(row=13, column = 4, pady=15)
+        self.one_month_trend_value_1.grid(row=13, column = 9, pady=15)
 
         self.three_month_trend_text_1 = tk.Label(self.tab1, text=str("Three Month Price Trend"))
-        self.three_month_trend_text_1.grid(row=14, column = 3, pady=15)
+        self.three_month_trend_text_1.grid(row=14, column = 8, pady=15)
         self.three_month_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[1]))
-        self.three_month_trend_value_1.grid(row=14, column = 4, pady=15)
+        self.three_month_trend_value_1.grid(row=14, column = 9, pady=15)
 
         self.one_month_obv_trend_text_1 = tk.Label(self.tab1, text=str("One Month OBV Trend"))
-        self.one_month_obv_trend_text_1.grid(row=15, column = 3, pady=15)
+        self.one_month_obv_trend_text_1.grid(row=15, column = 8, pady=15)
         self.one_month_obv_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[2]))
-        self.one_month_obv_trend_value_1.grid(row=15, column = 4, pady=15)
+        self.one_month_obv_trend_value_1.grid(row=15, column = 9, pady=15)
 
         self.three_month_obv_trend_text_1 = tk.Label(self.tab1, text=str("Three Month OBV Trend"))
-        self.three_month_obv_trend_text_1.grid(row=16, column = 3, pady=15)
+        self.three_month_obv_trend_text_1.grid(row=16, column = 8, pady=15)
         self.three_month_obv_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[3]))
-        self.three_month_obv_trend_value_1.grid(row=16, column = 4, pady=15)
+        self.three_month_obv_trend_value_1.grid(row=16, column = 9, pady=15)
 
 
         # Tab 2
@@ -197,7 +197,7 @@ class gui:
 
         self.particle_canvas_tab1 = FigureCanvasTkAgg(fig, self.tab1)
         fig.tight_layout()
-        self.particle_canvas_tab1.get_tk_widget().grid(row=3, column=0, rowspan=10, columnspan = 7, pady=15)
+        self.particle_canvas_tab1.get_tk_widget().grid(row=12, column=0, rowspan=15, columnspan = 7, pady=15)
 
 
     def plot_stock_gain_tab1(self, stock_gain):
