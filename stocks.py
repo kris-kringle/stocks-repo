@@ -80,7 +80,7 @@ while True:
                         my_gui.pull_list_stock_gain_dict.update({stock: stock_gain})
                         print("possible buy", tested_stocks)
                     result = stock_params.weekly_black_slope_cross_below_red(stock_params.row - 1)
-                    result2 = stock_params.weekly_black_slope_cross_below_zero(stock_params.row - 1)
+                    result2 = False # stock_params.weekly_black_slope_cross_below_zero(stock_params.row - 1)
                     if result == True or result2 == True:
                         sell_stocks = sell_stocks.append(pd.Series(stock), ignore_index=True)
                         my_gui.update_sell_list()

@@ -171,10 +171,12 @@ class stock_data:
         if self.row > 5:
             self.short_norm_stock_df['weekly_black_deriv'] = np.gradient(self.short_norm_stock_df['weekly_black'])
             self.short_norm_stock_df['weekly_black_deriv'] = self.short_norm_stock_df['weekly_black_deriv'].ewm(span=8, adjust=False).mean()
-            self.short_norm_stock_df['weekly_black_deriv'] = self.short_norm_stock_df['weekly_black_deriv'] / self.short_norm_stock_df['weekly_black_deriv'].abs().max()
             self.short_norm_stock_df['weekly_red_deriv'] = np.gradient(self.short_norm_stock_df['weekly_red'])
             self.short_norm_stock_df['weekly_red_deriv'] = self.short_norm_stock_df['weekly_red_deriv'].ewm(span=8, adjust=False).mean()
-            self.short_norm_stock_df['weekly_red_deriv'] = self.short_norm_stock_df['weekly_red_deriv'] / self.short_norm_stock_df['weekly_red_deriv'].abs().max()
+
+            max_weekly_slope = self.short_norm_stock_df['weekly_black_deriv'].abs().max()
+            self.short_norm_stock_df['weekly_black_deriv'] = self.short_norm_stock_df['weekly_black_deriv'] / max_weekly_slope
+            self.short_norm_stock_df['weekly_red_deriv'] = self.short_norm_stock_df['weekly_red_deriv'] / max_weekly_slope
 
         return False
 
@@ -182,7 +184,7 @@ class stock_data:
 
         f1 = plt.figure(figsize=(10, 6))
 
-        ax = plt.axes([0.05, 0.7, 0.9, 0.4])
+        ax = plt.axes([0.05, 0.52, 0.9, 0.4])
         ax.plot(self.short_norm_stock_df.index, self.short_norm_stock_df['ema26'], color='purple', label='ema26', linewidth=1.0)
         ax.plot(self.short_norm_stock_df.index, self.short_norm_stock_df['ema26_highenv'], color='purple', label='ema26_highenv', linewidth=1.0)
         ax.plot(self.short_norm_stock_df.index, self.short_norm_stock_df['ema26_lowenv'], color='purple', label='ema26_lowenv', linewidth=1.0)
@@ -281,7 +283,7 @@ class stock_data:
 
         i = 0
         for i in range(1, self.row):
-            if self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i) == True:
+            if self.weekly_black_slope_cross_below_red(i) == True: # or self.weekly_black_slope_cross_below_red(i) == True:
                 ax.axvline(x=str(self.short_norm_stock_df.index[i]), color='red', linewidth=1)
                 ax3.axvline(x=str(self.short_norm_stock_df.index[i]), color='red', linewidth=1)
                 ax4.axvline(x=str(self.short_norm_stock_df.index[i]), color='red', linewidth=1)
@@ -333,7 +335,7 @@ class stock_data:
                 price_up = self.short_norm_stock_df['close'][i]
                 print(price_up)
                 crossed_up = True
-            elif (self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i)) and crossed_up == True:
+            elif self.weekly_black_slope_cross_below_red(i) == True and crossed_up == True: # (self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i)) and crossed_up == True:
                 print("down", self.short_norm_stock_df.index[i])
                 price_down = self.short_norm_stock_df['close'][i]
                 stock_gain = stock_gain.append(pd.Series((price_down - price_up) / price_up), ignore_index=True)
