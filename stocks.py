@@ -57,7 +57,7 @@ while True:
         tested_stocks = pd.DataFrame()
         sell_stocks = pd.DataFrame()
         stock_params.hist_prices('aapl', my_gui.pull_list_date)
-        reg_data = pd.DataFrame(index=range(0), columns=range(24))
+        reg_data = pd.DataFrame(index=range(0), columns=range(25))
         reg_data.columns = stock_params.stock_df.columns
         x = 0
         for x in range(0, len(stock_list)):

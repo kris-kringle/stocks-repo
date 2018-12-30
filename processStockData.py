@@ -306,7 +306,7 @@ class stock_data:
                 ax6.axvline(x=str(self.short_norm_stock_df.index[i]), color='green', linewidth=2)
                 bought = True
 
-            elif self.weekly_black_slope_cross_below_red(i) and bought == True: # or self.weekly_black_slope_cross_below_red(i) == True:
+            elif (self.weekly_black_slope_cross_below_red(i)) and bought == True: # or self.weekly_black_slope_cross_below_red(i) == True:
                 ax.axvline(x=str(self.short_norm_stock_df.index[i]), color='red', linewidth=2)
                 ax3.axvline(x=str(self.short_norm_stock_df.index[i]), color='red', linewidth=2)
                 ax4.axvline(x=str(self.short_norm_stock_df.index[i]), color='red', linewidth=2)
@@ -363,9 +363,14 @@ class stock_data:
         max_close = 0
         for i in range(1, self.row):
             if self.weekly_black_slope_crossover_zero(i) == True and crossed_up == False:
-                price_up = self.short_norm_stock_df['close'][i]
-                crossed_up = True
-            elif self.weekly_black_slope_cross_below_red(i) and crossed_up == True: # (self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i)) and crossed_up == True:
+                if i + 1 != self.row:
+                    price_up = self.short_norm_stock_df['open'][i+1]
+                    if (self.short_stock_df['close'][i] * 1.01) > self.short_stock_df['low'][i+1]:
+                        print("bought", self.short_norm_stock_df.index[i], self.short_stock_df['close'][i], self.short_stock_df['low'][i+1])
+                    else:
+                        print("didn't buy", self.short_norm_stock_df.index[i], self.short_stock_df['close'][i], self.short_stock_df['low'][i+1])
+                    crossed_up = True
+            elif (self.weekly_black_slope_cross_below_red(i)) and crossed_up == True: # (self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i)) and crossed_up == True:
                 price_down = self.short_norm_stock_df['close'][i]
                 stock_gain = stock_gain.append(pd.Series((price_down - price_up) / price_up), ignore_index=True)
                 stock_max = stock_max.append(pd.Series((max_close - price_up) / price_up), ignore_index=True)
