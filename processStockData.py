@@ -358,31 +358,46 @@ class stock_data:
     def slope_crossover_history(self):
         # i = 0
         crossed_up = False
+        sold_percent = False
         stock_gain = pd.DataFrame()
         stock_max = pd.DataFrame()
+        days_to_max = pd.DataFrame()
+        # days_to_percent = pd.DataFrame()
         max_close = 0
         for i in range(1, self.row):
             if self.weekly_black_slope_crossover_zero(i) == True and crossed_up == False:
                 if i + 1 != self.row:
                     price_up = self.short_norm_stock_df['open'][i+1]
+                    # print("buy", self.short_norm_stock_df.index[i+1])
+                    day_price_up = self.short_norm_stock_df.index[i+1]
                     if (self.short_stock_df['close'][i] * 1.01) > self.short_stock_df['low'][i+1]:
                         print("bought", self.short_norm_stock_df.index[i], self.short_stock_df['close'][i], self.short_stock_df['low'][i+1])
                     else:
                         print("didn't buy", self.short_norm_stock_df.index[i], self.short_stock_df['close'][i], self.short_stock_df['low'][i+1])
                     crossed_up = True
+                    sold_percent = True
             elif (self.weekly_black_slope_cross_below_red(i)) and crossed_up == True: # (self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i)) and crossed_up == True:
                 price_down = self.short_norm_stock_df['close'][i]
                 stock_gain = stock_gain.append(pd.Series((price_down - price_up) / price_up), ignore_index=True)
                 stock_max = stock_max.append(pd.Series((max_close - price_up) / price_up), ignore_index=True)
+                # print("max", day_of_max)
+                # print(day_of_max - day_price_up)
+                days_to_max = days_to_max.append(pd.Series(day_of_max - day_price_up), ignore_index=True)
                 crossed_up = False
                 price_up = 0
                 max_close = 0
+                day_of_max = 0
+                day_price_up= 0
+            # if self.short_stock_df['high'][i] >= price_up * 1.05 and sold_percent == True:
+            #     days_to_percent = days_to_percent.append(pd.Series(day_of_max - day_price_up), ignore_index=True)
             if self.short_norm_stock_df['close'][i] > max_close and crossed_up == True:
                 max_close = self.short_norm_stock_df['close'][i]
+                day_of_max = self.short_norm_stock_df.index[i]
 
         stock_gain = stock_gain * 100
         stock_max = stock_max * 100
         print(stock_max)
+        print(days_to_max)
 
         return stock_gain
 
