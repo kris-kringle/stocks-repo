@@ -337,8 +337,8 @@ class stock_data:
         crossed_up = False
         for i in range(1, self.row):
             if self.weekly_black_and_red_above_zero(i) == True and crossed_up == False:
-                price_up = self.short_norm_stock_df['close'][i] * 1.04
-                if i + 1 != self.row and price_up > self.short_norm_stock_df['low'][i + 1]:
+                price_up = self.short_norm_stock_df['open'][i+1]
+                if i + 1 != self.row:
                     ax.axvline(x=i, color='green', linewidth=2)
                     ax3.axvline(x=i, color='green', linewidth=2)
                     ax4.axvline(x=i, color='green', linewidth=2)
@@ -425,9 +425,8 @@ class stock_data:
         for i in range(1, self.row):
             if self.weekly_black_and_red_above_zero(i) == True and crossed_up == False:
                 if i + 1 != self.row:
-                    if (self.short_norm_stock_df['close'][i] * 1.04) > self.short_norm_stock_df['low'][i+1]:
-                        price_up = self.short_norm_stock_df['close'][i] * 1.04
-                        bought = True
+                    price_up = self.short_norm_stock_df['open'][i+1]
+                    bought = True
                 crossed_up = True
             elif self.weekly_black_or_red_below_zero(i) and crossed_up == True and bought == True: # (self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i)) and crossed_up == True:
                 price_down = self.short_norm_stock_df['close'][i]
