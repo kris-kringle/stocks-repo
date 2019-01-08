@@ -83,6 +83,7 @@ class stock_data:
         self.stock_df['weekly_black'] = self.stock_df['ema60'] - self.stock_df['ema130']
         self.stock_df['weekly_red'] = self.stock_df['weekly_black'].ewm(span=45, adjust=False).mean()
         self.stock_df['sma_26'] = self.stock_df['close'].rolling(window=26).mean()
+        self.stock_df['ema_200'] = self.stock_df['close'].ewm(span=200, adjust=False).mean()
         # self.stock_df['weekly_red'] = self.stock_df['weekly_black'].rolling(window=45).mean()
 
         #self.stock_df['weekly_black'] = self.stock_df['weekly_black'].ewm(span=5, adjust=False).mean()
@@ -109,7 +110,7 @@ class stock_data:
 
         self.stock_df['volume'] = self.stock_df['volume'] / self.stock_df['volume'].max()
         self.stock_df['obv_volume'] = self.stock_df['obv_volume'] / self.stock_df['obv_volume'].max()
-        self.stock_df['obv_volume'] = self.stock_df['obv_volume'].ewm(span=15, adjust=False).mean()
+        self.stock_df['obv_volume'] = self.stock_df['obv_volume'].ewm(span=50, adjust=False).mean()
 
         avg_volume = self.stock_df['volume'][self.row - 10:].mean()
         self.stock_df['close_from_top_env'] = self.stock_df['ema26_highenv'] - self.stock_df['close']
@@ -118,6 +119,7 @@ class stock_data:
             self.stock_df['daily_red_deriv'] = np.gradient(self.stock_df['daily_red'])
             self.stock_df['weekly_black_deriv'] = np.gradient(self.stock_df['weekly_black'])
             self.stock_df['weekly_red_deriv'] = np.gradient(self.stock_df['weekly_red'])
+            self.stock_df['ema_200_slope'] = np.gradient(self.stock_df['ema_200'])
 
 
         self.stock_df['decision'] = 0
@@ -137,6 +139,7 @@ class stock_data:
         self.short_norm_stock_df['averaged_close'] = self.short_norm_stock_df['averaged_close'] / self.short_norm_stock_df['averaged_close'].max()
 
         self.short_norm_stock_df['sma_26'] = self.short_norm_stock_df['close'].rolling(window=26).mean()
+        self.short_norm_stock_df['ema_200'] = self.short_norm_stock_df['close'].ewm(span=200, adjust=False).mean()
         self.short_norm_stock_df['ema26'] = self.short_norm_stock_df['close'].ewm(span=26, adjust=False).mean()
         # self.short_norm_stock_df['ema12'] = self.short_norm_stock_df['close'].ewm(span=12, adjust=False).mean()
 
@@ -175,6 +178,7 @@ class stock_data:
 
             self.short_norm_stock_df['daily_black_deriv'] = np.gradient(self.short_norm_stock_df['daily_black'])
             self.short_norm_stock_df['daily_red_deriv'] = np.gradient(self.short_norm_stock_df['daily_red'])
+            self.short_norm_stock_df['ema_200_slope'] = np.gradient(self.short_norm_stock_df['ema_200'])
 
             weekly_slope_max = self.short_norm_stock_df['weekly_black_deriv'].abs().max()
             if weekly_slope_max < self.short_norm_stock_df['weekly_red_deriv'].abs().max():
@@ -224,6 +228,7 @@ class stock_data:
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema26_lowenv'], color='purple', label='ema26_lowenv', linewidth=1.0)
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['close'])
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['sma_26'])
+        ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema_200'])
 
         ax.set_title(self.stock)
         ax.grid(True, which='both')
@@ -309,33 +314,84 @@ class stock_data:
         price_up = 0
         bought = False
         crossed_up = False
+        ax.fill
         for i in range(1, self.row):
-            if self.weekly_red_slope_crossover_zero(i) == True and self.obv_volume_slope_up(i) == True and crossed_up == False:
-
+            if self.weekly_red_above_zero(i) == True and self.daily_red_above_zero(i) == True and self.price_above_EMA200(i) == True and self.obv_volume_slope_up(i) == True and self.EMA200_slope_up(i) == True:# and crossed_up == False:
                 if i + 1 != self.row:
                     price_up = self.short_norm_stock_df['open'][i + 1]
-                    ax.axvline(x=i, color='green', linewidth=2)
-                    ax3.axvline(x=i, color='green', linewidth=2)
-                    ax4.axvline(x=i, color='green', linewidth=2)
-                    ax6.axvline(x=i, color='green', linewidth=2)
+
+                    ax.axvline(x=i, color='green', linewidth=2, alpha=0.5)
+                    ax3.axvline(x=i, color='green', linewidth=2, alpha=0.5)
+                    ax4.axvline(x=i, color='green', linewidth=2, alpha=0.5)
+                    ax6.axvline(x=i, color='green', linewidth=2, alpha=0.5)
                     bought = True
 
-                if i + 1 == self.row:
-                    ax.axvline(x=i, color='green', linewidth=2)
-                    ax3.axvline(x=i, color='green', linewidth=2)
-                    ax4.axvline(x=i, color='green', linewidth=2)
-                    ax6.axvline(x=i, color='green', linewidth=2)
+            # elif self.weekly_red_above_zero(i) == False and bought == True and crossed_up == True:
+            #     ax.axvline(x=i, color='red', linewidth=2)
+            #     ax3.axvline(x=i, color='red', linewidth=2)
+            #     ax4.axvline(x=i, color='red', linewidth=2)
+            #     ax6.axvline(x=i, color='red', linewidth=2)
+            #     crossed_up = False
+            #     bought = False
 
-                crossed_up = True
-                percent_made = False
+            elif self.weekly_red_above_zero(i) == True and self.daily_red_above_zero(i) == True and self.price_above_EMA200(i) == True and self.obv_volume_slope_up(i) == False and self.EMA200_slope_up(i) == True:
+                ax.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+                ax3.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+                ax4.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+                ax6.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
 
-            elif self.daily_red_cross_below_zero(i) and bought == True:
-                ax.axvline(x=i, color='red', linewidth=2)
-                ax3.axvline(x=i, color='red', linewidth=2)
-                ax4.axvline(x=i, color='red', linewidth=2)
-                ax6.axvline(x=i, color='red', linewidth=2)
-                crossed_up = False
-                bought = False
+            elif self.weekly_red_above_zero(i) == True and self.daily_red_above_zero(i) == False and self.price_above_EMA200(i) == True and self.EMA200_slope_up(i) == True:
+                ax.axvline(x=i, color='yellow', linewidth=2, alpha=0.5)
+                ax3.axvline(x=i, color='yellow', linewidth=2, alpha=0.5)
+                ax4.axvline(x=i, color='yellow', linewidth=2, alpha=0.5)
+                ax6.axvline(x=i, color='yellow', linewidth=2, alpha=0.5)
+
+            elif self.weekly_red_above_zero(i) == False and self.daily_red_above_zero(i) == True and self.price_above_EMA200(i) == True  and self.obv_volume_slope_up(i) == True and self.EMA200_slope_up(i) == True:
+                ax.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+                ax3.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+                ax4.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+                ax6.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+
+            # elif self.weekly_red_above_zero(i) == False and self.daily_red_above_zero(i) == False and self.price_above_EMA200(i) == True  and self.EMA200_slope_up(i) == True:
+            #     ax.axvline(x=i, color='red', linewidth=2, alpha=0.2)
+            #     ax3.axvline(x=i, color='red', linewidth=2, alpha=0.2)
+            #     ax4.axvline(x=i, color='red', linewidth=2, alpha=0.2)
+            #     ax6.axvline(x=i, color='red', linewidth=2, alpha=0.2)
+            #
+            # elif self.weekly_red_above_zero(i) == False and self.daily_red_above_zero(i) == True and self.price_above_EMA200(i) == True  and self.EMA200_slope_up(i) == True:
+            #     ax.axvline(x=i, color='red', linewidth=2, alpha=0.2)
+            #     ax3.axvline(x=i, color='red', linewidth=2, alpha=0.2)
+            #     ax4.axvline(x=i, color='red', linewidth=2, alpha=0.2)
+            #     ax6.axvline(x=i, color='red', linewidth=2, alpha=0.2)
+            #
+            # # elif self.weekly_red_above_zero(i) == True and self.daily_red_above_zero(i) == False and self.price_above_EMA200(i) == True and self.EMA200_slope_up(i) == True:
+            # #     ax.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+            # #     ax3.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+            # #     ax4.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+            # #     ax6.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+            # #
+            # # elif self.weekly_red_above_zero(i) == True and self.daily_red_above_zero(i) == True and self.price_above_EMA200(i) == False and self.EMA200_slope_up(i) == True:
+            # #     ax.axvline(x=i, color='red', linewidth=2, alpha=0.1)
+            # #     ax3.axvline(x=i, color='red', linewidth=2, alpha=0.1)
+            # #     ax4.axvline(x=i, color='red', linewidth=2, alpha=0.1)
+            # #     ax6.axvline(x=i, color='red', linewidth=2, alpha=0.1)
+            # #
+            # # elif self.weekly_red_above_zero(i) == True and self.daily_red_above_zero(i) == False and (self.price_above_EMA200(i) == False or self.EMA200_slope_up(i) == False):
+            # #     ax.axvline(x=i, color='red', linewidth=2, alpha=0.1)
+            # #     ax3.axvline(x=i, color='red', linewidth=2, alpha=0.1)
+            # #     ax4.axvline(x=i, color='red', linewidth=2, alpha=0.1)
+            # #     ax6.axvline(x=i, color='red', linewidth=2, alpha=0.1)
+            #
+            # elif self.price_above_EMA200(i) == False or self.EMA200_slope_up(i) == False:
+            #     ax.axvline(x=i, color='red', linewidth=2, alpha=0.4)
+            #     ax3.axvline(x=i, color='red', linewidth=2, alpha=0.4)
+            #     ax4.axvline(x=i, color='red', linewidth=2, alpha=0.4)
+            #     ax6.axvline(x=i, color='red', linewidth=2, alpha=0.4)
+
+            # else:
+            #     print(i, self.weekly_red_above_zero(i), self.daily_red_above_zero(i), self.price_above_EMA200(i), self.obv_volume_slope_up(i), self.EMA200_slope_up(i))
+
+        plt.close(f1)
 
         return f1, stock_gain
 
@@ -346,12 +402,13 @@ class stock_data:
         price_up = 0
         percent = 3
         for i in range(1, self.row):
-            if self.weekly_red_slope_crossover_zero(i) == True and self.obv_volume_slope_up(i) == True and crossed_up == False:
+            if self.weekly_red_above_zero(i) == True and self.obv_volume_slope_up(i) == True and self.EMA200_slope_up(i) == True and crossed_up == False:
                 if i + 1 != self.row:
                     price_up = self.short_norm_stock_df['open'][i+1]
                     bought = True
                 crossed_up = True
-            elif self.daily_red_cross_below_zero(i) and crossed_up == True and bought == True: # (self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i)) and crossed_up == True:
+            elif self.weekly_red_above_zero(i) == False and bought == True  and crossed_up == True: # (self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i)) and crossed_up == True:
+                # print(self.daily_red_above_zero(i), self.EMA200_slope_up(i))
                 price_down = self.short_norm_stock_df['close'][i]
                 if bought == True:
                     stock_gain = stock_gain.append(pd.Series((price_down - price_up) / price_up), ignore_index=True)
@@ -454,14 +511,32 @@ class stock_data:
             passCriteria = True
         return passCriteria
 
+    def weekly_red_above_zero(self, effective_row):
+        passCriteria = False
+        if self.short_norm_stock_df['weekly_red_deriv'][effective_row] > 0:
+            passCriteria = True
+        return passCriteria
+
+    def daily_red_above_zero(self, effective_row):
+        passCriteria = False
+        if self.short_norm_stock_df['daily_red_deriv'][effective_row] > 0:
+            passCriteria = True
+        return passCriteria
+
     def obv_volume_slope_up(self, effective_row):
         passCriteria = False
         if self.short_norm_stock_df['obv_volume_slope'][effective_row] > 0:
             passCriteria = True
         return passCriteria
 
-    def SMA_slope_up(self, effective_row):
+    def EMA200_slope_up(self, effective_row):
         passCriteria = False
-        if self.short_norm_stock_df['obv_volume_slope'][effective_row] > 0:
+        if self.short_norm_stock_df['ema_200_slope'][effective_row] > 0:
+            passCriteria = True
+        return passCriteria
+
+    def price_above_EMA200(self, effective_row):
+        passCriteria = False
+        if self.short_norm_stock_df['close'][effective_row] >= self.short_norm_stock_df['ema_200_slope'][effective_row]:
             passCriteria = True
         return passCriteria

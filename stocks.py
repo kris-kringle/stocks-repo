@@ -57,7 +57,7 @@ while True:
         tested_stocks = pd.DataFrame()
         sell_stocks = pd.DataFrame()
         stock_params.hist_prices('aapl', my_gui.pull_list_date)
-        reg_data = pd.DataFrame(index=range(0), columns=range(28))
+        reg_data = pd.DataFrame(index=range(0), columns=range(30))
         reg_data.columns = stock_params.stock_df.columns
         x = 0
         for x in range(0, len(stock_list)):
@@ -70,9 +70,12 @@ while True:
                 print(stock + " - " + str(stock_params.short_norm_stock_df.index[stock_params.row-1]))
                 if stock_params.row > 200:
                     result = stock_params.weekly_red_slope_crossover_zero(stock_params.row - 1)
+                    result = [stock_params.weekly_red_above_zero(stock_params.row - 1), stock_params.daily_red_above_zero(stock_params.row - 1), stock_params.price_above_EMA200(stock_params.row - 1), stock_params.obv_volume_slope_up(stock_params.row - 1), stock_params.EMA200_slope_up(stock_params.row - 1)]
                     if my_gui.csv_variable != "total_stock_list":
-                        result = True
-                    if result == True and len(stock_gain) != 0 and float(stock_gain.min()) > -20:
+                        result = [True, True, True, True, True]
+                    print(stock, result)
+                    if (result == [True, True, True, True, True] or result == [True, True, True, False, True] or result == [False, True, True, True, True] or result == [True, False, True, True, True] or result == [True, False, True, False, True]):# and len(stock_gain) != 0 and float(stock_gain.min()) > -20:
+                        print("here")
                         tested_stocks = tested_stocks.append(pd.Series(stock), ignore_index=True)
                         my_gui.update_buy_list()
                         fig, stock_gain = stock_params.plot_chart()
@@ -80,16 +83,16 @@ while True:
                         my_gui.pull_list_dict.update({stock:fig})
                         my_gui.pull_list_stock_gain_dict.update({stock: stock_gain})
                         print("possible buy", tested_stocks)
-                    result = False # stock_params.weekly_black_slope_cross_below_red(stock_params.row - 1)
-                    result2 = stock_params.daily_red_cross_below_zero(stock_params.row - 1)
-                    if result == True or result2 == True:
-                        sell_stocks = sell_stocks.append(pd.Series(stock), ignore_index=True)
-                        my_gui.update_sell_list()
-                        fig, stock_gain = stock_params.plot_chart()
-                        my_gui.pull_list_trend_dict.update({stock:stock_params.check_trends(stock_params.row)})
-                        my_gui.pull_list_dict.update({stock:fig})
-                        my_gui.pull_list_stock_gain_dict.update({stock:stock_gain})
-                        print("sell", sell_stocks)
+                    # result = False # stock_params.weekly_black_slope_cross_below_red(stock_params.row - 1)
+                    # result2 = stock_params.daily_red_cross_below_zero(stock_params.row - 1)
+                    # if result == True or result2 == True:
+                    #     sell_stocks = sell_stocks.append(pd.Series(stock), ignore_index=True)
+                    #     my_gui.update_sell_list()
+                    #     fig, stock_gain = stock_params.plot_chart()
+                    #     my_gui.pull_list_trend_dict.update({stock:stock_params.check_trends(stock_params.row)})
+                    #     my_gui.pull_list_dict.update({stock:fig})
+                    #     my_gui.pull_list_stock_gain_dict.update({stock:stock_gain})
+                    #     print("sell", sell_stocks)
 
             my_gui.update_pull_list_status()
             root.update_idletasks()
