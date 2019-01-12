@@ -29,11 +29,12 @@ class gui:
 
         self.stock = "DIA"
         self.stock_gain = 0
-        self.pull_date = ""
+
         self.csv_variable = "total_stock_list"
 
         self.now = dt.datetime.now()
         self.pull_list_date = str(dt.datetime(self.now.year, self.now.month, self.now.day))[0:10]
+        self.pull_date = str(dt.datetime(self.now.year, self.now.month, self.now.day))[0:10]
         self.pull_list_stock = ""
         self.state = ""
         self.pull_list_dict = {}
@@ -44,13 +45,20 @@ class gui:
         # Tab 1 - 1
         self.pull_stock_label = tk.Label(self.tab1, text=str("Check stock"), wraplength=150)
         self.pull_stock_label.grid(row=1, column = 0, pady=5)
+
         self.pull_stock_entry = tk.Entry(self.tab1)
         self.pull_stock_entry.insert(tk.END, self.stock)
         self.pull_stock_entry.bind('<Return>', self.update_pull_stock)
         self.pull_stock_entry.grid(row=1, column=1, pady=5)
+
+        self.pull_stock_date = tk.Entry(self.tab1)
+        self.pull_stock_date.insert(tk.END, self.pull_date)
+        self.pull_stock_date.bind('<Return>', self.update_pull_stock)
+        self.pull_stock_date.grid(row=1, column=2, pady=5)
+
         self.pull_stock_button = tk.Button(self.tab1, text="Enter")
         self.pull_stock_button.bind('<Button 1>', self.update_pull_stock)
-        self.pull_stock_button.grid(row=1, column=2, pady=5)
+        self.pull_stock_button.grid(row=1, column=3, pady=5)
 
         photo = Image.fromarray(np.uint8(np.empty((900, 1200, 3))))
         self.img_1 = ImageTk.PhotoImage(photo)
@@ -252,6 +260,7 @@ class gui:
     def update_pull_stock(self, event):
 
         self.stock = self.pull_stock_entry.get()
+        self.pull_date = self.pull_stock_date.get()
         self.state = "pull"
 
 

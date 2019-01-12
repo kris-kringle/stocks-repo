@@ -27,7 +27,7 @@ my_gui.pics_filepath = pics_filepath
 stock_params = psd.stock_data()
 stock_params.pics_filepath = pics_filepath
 
-err = stock_params.hist_prices(my_gui.stock, my_gui.pull_list_date)
+err = stock_params.hist_prices(my_gui.stock, my_gui.pull_date)
 if err == False:
     stock_gain = stock_params.plot_chart()
     my_gui.plot_fig_tab1()
@@ -48,13 +48,12 @@ while True:
 
         if my_gui.stock != old_stock:
 
-            err = stock_params.hist_prices(my_gui.stock, my_gui.pull_list_date)
+            err = stock_params.hist_prices(my_gui.stock, my_gui.pull_date)
             if err == False:
                 stock_gain = stock_params.plot_chart()
                 my_gui.plot_stock_gain_tab1(stock_gain)
                 my_gui.plot_fig_tab1()
                 my_gui.trend_status = stock_params.check_trends(stock_params.row)
-                #print(stock_params.row)
                 print(my_gui.trend_status)
             old_stock = my_gui.stock
 
@@ -84,7 +83,7 @@ while True:
                     print(stock, result)
                     if (result == [True, True, True, True, True] or result == [True, True, True, False, True] or result == [False, True, True, True, True]):# and len(stock_gain) != 0 and float(stock_gain.min()) > -20:
                         if stock_params.short_norm_stock_df['ema26_lowenv'][stock_params.row - 1] < stock_params.short_norm_stock_df['close'][stock_params.row - 1] <= stock_params.short_norm_stock_df['ema26_highenv'][stock_params.row - 1]:
-                            if stock_params.avg_volume >= 500000:
+                            if stock_params.avg_volume >= 500000 and stock_params.env_percent > 0.04:
                                 tested_stocks = tested_stocks.append(pd.Series(stock), ignore_index=True)
                                 my_gui.update_buy_list()
                                 stock_gain = stock_params.plot_chart()
@@ -92,16 +91,6 @@ while True:
                                 # my_gui.pull_list_dict.update({stock:fig})
                                 my_gui.pull_list_stock_gain_dict.update({stock: stock_gain})
                                 print("possible buy", tested_stocks)
-                    # result = False # stock_params.weekly_black_slope_cross_below_red(stock_params.row - 1)
-                    # result2 = stock_params.daily_red_cross_below_zero(stock_params.row - 1)
-                    # if result == True or result2 == True:
-                    #     sell_stocks = sell_stocks.append(pd.Series(stock), ignore_index=True)
-                    #     my_gui.update_sell_list()
-                    #     fig, stock_gain = stock_params.plot_chart()
-                    #     my_gui.pull_list_trend_dict.update({stock:stock_params.check_trends(stock_params.row)})
-                    #     my_gui.pull_list_dict.update({stock:fig})
-                    #     my_gui.pull_list_stock_gain_dict.update({stock:stock_gain})
-                    #     print("sell", sell_stocks)
 
             my_gui.update_pull_list_status()
             root.update_idletasks()

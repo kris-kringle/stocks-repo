@@ -28,7 +28,7 @@ class stock_data:
         self.short_stock_df = pd.DataFrame()
         self.short_norm_stock_df = pd.DataFrame()
         self.pics_filepath = ""
-        self.ema_percent_string = ""
+        self.env_percent = 0.04
         self.last_gain = ""
         self.stock_name = ""
         self.avg_volume = 0
@@ -48,8 +48,9 @@ class stock_data:
         if self.row < 100:
             print("not enough data" + str(self.stock))
             return True
-
+        print(self.stock_df.index[self.row - 1], str(end)[0:10])
         if self.stock_df.index[self.row - 1] == str(end)[0:10]:
+            print("drop")
             self.stock_df = self.stock_df.drop(self.stock_df.index[self.row - 1])
             self.row, col = self.stock_df.shape
         if self.stock_df.index[self.row - 1] != str(end)[0:10]:
@@ -164,16 +165,14 @@ class stock_data:
 
         self.short_norm_stock_df['weekly_black'] = self.short_norm_stock_df['weekly_black'] / weekly_max
         self.short_norm_stock_df['weekly_red'] = self.short_norm_stock_df['weekly_red'] / weekly_max
-        env_percent = .04
         self.short_norm_stock_df['fit_env'] = 0
         while self.short_norm_stock_df['fit_env'].mean() <= .95:
-            self.short_norm_stock_df['ema26_highenv'] = self.short_norm_stock_df['ema26'] * (1 + env_percent)
-            self.short_norm_stock_df['ema26_lowenv'] = self.short_norm_stock_df['ema26'] * (1 - env_percent)
+            self.short_norm_stock_df['ema26_highenv'] = self.short_norm_stock_df['ema26'] * (1 + self.env_percent)
+            self.short_norm_stock_df['ema26_lowenv'] = self.short_norm_stock_df['ema26'] * (1 - self.env_percent)
             self.short_norm_stock_df['fit_env'] = np.where((self.short_norm_stock_df['ema26_highenv'] >= self.short_norm_stock_df['high']) &
                                                            (self.short_norm_stock_df['ema26_lowenv'] <= self.short_norm_stock_df['low']),1, 0)
-            env_percent += .0005
+            self.env_percent += .0005
 
-        self.ema_percent_string = str(round(env_percent*100,1)) + " %"
         # print(self.short_norm_stock_df['close'][self.row - 1], self.short_norm_stock_df['close'][self.row - 2])
         self.last_gain = "Last Gain: " + str(round((((self.short_norm_stock_df['close'][self.row - 1] - self.short_norm_stock_df['close'][self.row - 2])/self.short_norm_stock_df['close'][self.row - 2]) * 100), 2)) + " %"
         # print(self.last_gain)
@@ -238,7 +237,7 @@ class stock_data:
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['sma_26'])
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema_200'])
 
-        ax.set_title(self.stock + " - " + self.stock_name + "\nEnvelope: " + self.ema_percent_string + "    ---    " + self.last_gain + "    ---    Avg. Volume: " + str("{:,}".format(int(self.avg_volume))))
+        ax.set_title(self.stock + " - " + self.stock_name + "\nEnvelope: " + str(round(self.env_percent*100,1)) + " %" + "           " + self.last_gain + "           Avg. Volume: " + str("{:,}".format(int(self.avg_volume))))
         ax.grid(True, which='both')
         ax.tick_params(labelright=True)
         ax.xaxis.set_major_formatter(formatter)
