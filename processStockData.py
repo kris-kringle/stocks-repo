@@ -12,6 +12,8 @@ import iexfinance as iex
 from dateutil import parser
 from matplotlib.ticker import Formatter
 from matplotlib.dates import bytespdate2num, num2date
+import os
+from textwrap import wrap
 
 class stock_data:
 
@@ -25,6 +27,11 @@ class stock_data:
         self.stock_df = pd.DataFrame()
         self.short_stock_df = pd.DataFrame()
         self.short_norm_stock_df = pd.DataFrame()
+        self.pics_filepath = ""
+        self.ema_percent_string = ""
+        self.last_gain = ""
+        self.stock_name = ""
+        self.avg_volume = 0
 
         self.trend_status = [None] * 6
 
@@ -41,6 +48,10 @@ class stock_data:
         if self.row < 100:
             print("not enough data" + str(self.stock))
             return True
+
+        if self.stock_df.index[self.row - 1] == str(end)[0:10]:
+            self.stock_df = self.stock_df.drop(self.stock_df.index[self.row - 1])
+            self.row, col = self.stock_df.shape
         if self.stock_df.index[self.row - 1] != str(end)[0:10]:
             stock_quote = iex.Stock(self.stock)
             try:
@@ -56,6 +67,7 @@ class stock_data:
                 stock_low = stock_pd['low']
                 stock_close = stock_pd['close']
                 stock_volume = stock_pd['latestVolume']
+                self.stock_name = stock_pd['companyName']
                 if stock_volume == None:
                     stock_volume = self.stock_df['volume'].mean()
                 f_day = {'open': [stock_open], 'high': [stock_high], 'low': [stock_low], 'close': [stock_close],
@@ -77,16 +89,12 @@ class stock_data:
         self.stock_df['ema26'] = self.stock_df['close'].ewm(span=65, adjust=False).mean()
         self.stock_df['daily_black'] = self.stock_df['ema12'] - self.stock_df['ema26']
         self.stock_df['daily_red'] = self.stock_df['daily_black'].ewm(span=35, adjust=False).mean()
-        # self.stock_df['daily_red'] = self.stock_df['daily_black'].rolling(window=23).mean()
         self.stock_df['ema60'] = self.stock_df['close'].ewm(span=60, adjust=False).mean()
         self.stock_df['ema130'] = self.stock_df['close'].ewm(span=130, adjust=False).mean()
         self.stock_df['weekly_black'] = self.stock_df['ema60'] - self.stock_df['ema130']
         self.stock_df['weekly_red'] = self.stock_df['weekly_black'].ewm(span=45, adjust=False).mean()
         self.stock_df['sma_26'] = self.stock_df['close'].rolling(window=26).mean()
         self.stock_df['ema_200'] = self.stock_df['close'].ewm(span=200, adjust=False).mean()
-        # self.stock_df['weekly_red'] = self.stock_df['weekly_black'].rolling(window=45).mean()
-
-        #self.stock_df['weekly_black'] = self.stock_df['weekly_black'].ewm(span=5, adjust=False).mean()
 
         env_percent = .04
         self.stock_df['fit_env'] = 0
@@ -108,11 +116,13 @@ class stock_data:
             else:
                 self.stock_df['obv_volume'][i] = self.stock_df['obv_volume'][i - 1]
 
+        self.avg_volume = self.stock_df['volume'][self.row - 3:self.row - 1].mean()
+
         self.stock_df['volume'] = self.stock_df['volume'] / self.stock_df['volume'].max()
         self.stock_df['obv_volume'] = self.stock_df['obv_volume'] / self.stock_df['obv_volume'].max()
         self.stock_df['obv_volume'] = self.stock_df['obv_volume'].ewm(span=50, adjust=False).mean()
 
-        avg_volume = self.stock_df['volume'][self.row - 10:].mean()
+
         self.stock_df['close_from_top_env'] = self.stock_df['ema26_highenv'] - self.stock_df['close']
         if self.row > 5:
             self.stock_df['daily_black_deriv'] = np.gradient(self.stock_df['daily_black'])
@@ -120,7 +130,6 @@ class stock_data:
             self.stock_df['weekly_black_deriv'] = np.gradient(self.stock_df['weekly_black'])
             self.stock_df['weekly_red_deriv'] = np.gradient(self.stock_df['weekly_red'])
             self.stock_df['ema_200_slope'] = np.gradient(self.stock_df['ema_200'])
-
 
         self.stock_df['decision'] = 0
         self.stock_df['stock-name'] = stock
@@ -141,7 +150,6 @@ class stock_data:
         self.short_norm_stock_df['sma_26'] = self.short_norm_stock_df['close'].rolling(window=26).mean()
         self.short_norm_stock_df['ema_200'] = self.short_norm_stock_df['close'].ewm(span=200, adjust=False).mean()
         self.short_norm_stock_df['ema26'] = self.short_norm_stock_df['close'].ewm(span=26, adjust=False).mean()
-        # self.short_norm_stock_df['ema12'] = self.short_norm_stock_df['close'].ewm(span=12, adjust=False).mean()
 
         daily_max = self.short_norm_stock_df['daily_black'].abs().max()
         if daily_max < self.short_norm_stock_df['daily_red'].abs().max():
@@ -164,6 +172,11 @@ class stock_data:
             self.short_norm_stock_df['fit_env'] = np.where((self.short_norm_stock_df['ema26_highenv'] >= self.short_norm_stock_df['high']) &
                                                            (self.short_norm_stock_df['ema26_lowenv'] <= self.short_norm_stock_df['low']),1, 0)
             env_percent += .0005
+
+        self.ema_percent_string = str(round(env_percent*100,1)) + " %"
+        # print(self.short_norm_stock_df['close'][self.row - 1], self.short_norm_stock_df['close'][self.row - 2])
+        self.last_gain = "Last Gain: " + str(round((((self.short_norm_stock_df['close'][self.row - 1] - self.short_norm_stock_df['close'][self.row - 2])/self.short_norm_stock_df['close'][self.row - 2]) * 100), 2)) + " %"
+        # print(self.last_gain)
 
         pd.options.mode.chained_assignment = None
 
@@ -196,14 +209,9 @@ class stock_data:
             self.short_norm_stock_df['weekly_red_deriv'] = self.short_norm_stock_df['weekly_red_deriv'] / weekly_slope_max
             self.short_norm_stock_df['weekly_slope_histogram'] = self.short_norm_stock_df['weekly_black_deriv'] - self.short_norm_stock_df['weekly_red_deriv']
 
-            #self.short_norm_stock_df['weekly_red_double_deriv'] = np.gradient(self.short_norm_stock_df['weekly_red_deriv'])
-
         return False
 
     def plot_chart(self):
-
-        # months = MonthLocator(range(1, 13), bymonthday=1, interval=1)
-        # monthsFmt = DateFormatter("%b")
 
         class MyFormatter(Formatter):
             def __init__(self, dates, fmt='%Y-%m-%d'):
@@ -222,7 +230,7 @@ class stock_data:
 
         f1 = plt.figure(figsize=(12, 9))
 
-        ax = plt.axes([0.05, 0.57, 0.9, 0.4])
+        ax = plt.axes([0.05, 0.57, 0.9, 0.38])
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema26'], color='purple', label='ema26', linewidth=1.0)
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema26_highenv'], color='purple', label='ema26_highenv', linewidth=1.0)
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema26_lowenv'], color='purple', label='ema26_lowenv', linewidth=1.0)
@@ -230,12 +238,11 @@ class stock_data:
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['sma_26'])
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema_200'])
 
-        ax.set_title(self.stock)
+        ax.set_title(self.stock + " - " + self.stock_name + "\nEnvelope: " + self.ema_percent_string + "    ---    " + self.last_gain + "    ---    Avg. Volume: " + str("{:,}".format(int(self.avg_volume))))
         ax.grid(True, which='both')
         ax.tick_params(labelright=True)
         ax.xaxis.set_major_formatter(formatter)
         ax.xaxis.set_ticklabels([])
-
 
         ax2 = plt.axes([0.05, 0.46, 0.9, 0.1])
         ax5 = ax2.twinx()
@@ -253,8 +260,6 @@ class stock_data:
         ax2.grid(True, which='both')
         ax2.tick_params(labelright=True)
         ax2.xaxis.set_major_formatter(formatter)
-        # ax2.xaxis.set_major_locator(months)
-        # ax2.xaxis.set_major_formatter(monthsFmt)
         ax2.xaxis.set_ticklabels([])
 
         ax3 = plt.axes([0.05, 0.35, 0.9, 0.1])
@@ -392,8 +397,9 @@ class stock_data:
             #     print(i, self.weekly_red_above_zero(i), self.daily_red_above_zero(i), self.price_above_EMA200(i), self.obv_volume_slope_up(i), self.EMA200_slope_up(i))
 
         plt.close(f1)
+        f1.savefig(os.path.join(self.pics_filepath, str(self.stock) + '.png'))
 
-        return f1, stock_gain
+        return stock_gain
 
     def slope_crossover_history(self):
         crossed_up = False

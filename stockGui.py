@@ -4,6 +4,7 @@ import tkinter.ttk
 import matplotlib
 import numpy as np
 import os
+from PIL import ImageTk, Image
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -24,6 +25,7 @@ class gui:
         self.note.grid(row=0, column=0)
         self.index = ""
         self.trend_status = [None] * 6
+        self.pics_filepath = ""
 
         self.stock = "DIA"
         self.stock_gain = 0
@@ -50,30 +52,35 @@ class gui:
         self.pull_stock_button.bind('<Button 1>', self.update_pull_stock)
         self.pull_stock_button.grid(row=1, column=2, pady=5)
 
-        self.stock_gain_listbox_tab1 = tk.Listbox(self.tab1)
-        self.stock_gain_listbox_tab1.insert(tk.END, "stock_gain")
-        self.stock_gain_listbox_tab1.grid(row=17, column=8, rowspan = 10, pady=5)
-
+        photo = Image.fromarray(np.uint8(np.empty((900, 1200, 3))))
+        self.img_1 = ImageTk.PhotoImage(photo)
+        self.label_img = tk.Label(self.tab1, image=self.img_1)
+        self.label_img.image = self.img_1
+        self.label_img.grid(row=2, column=0, rowspan=19, columnspan = 6, pady=5)
 
         self.one_month_trend_text_1 = tk.Label(self.tab1, text=str("One Month Price Trend"))
-        self.one_month_trend_text_1.grid(row=13, column = 8, pady=5)
+        self.one_month_trend_text_1.grid(row=8, column = 8, pady=5)
         self.one_month_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[0]))
-        self.one_month_trend_value_1.grid(row=13, column = 9, pady=5)
+        self.one_month_trend_value_1.grid(row=8, column = 9, pady=5)
 
         self.three_month_trend_text_1 = tk.Label(self.tab1, text=str("Three Month Price Trend"))
-        self.three_month_trend_text_1.grid(row=14, column = 8, pady=5)
+        self.three_month_trend_text_1.grid(row=9, column = 8, pady=5)
         self.three_month_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[1]))
-        self.three_month_trend_value_1.grid(row=14, column = 9, pady=5)
+        self.three_month_trend_value_1.grid(row=9, column = 9, pady=5)
 
         self.one_month_obv_trend_text_1 = tk.Label(self.tab1, text=str("One Month OBV Trend"))
-        self.one_month_obv_trend_text_1.grid(row=15, column = 8, pady=5)
+        self.one_month_obv_trend_text_1.grid(row=10, column = 8, pady=5)
         self.one_month_obv_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[2]))
-        self.one_month_obv_trend_value_1.grid(row=15, column = 9, pady=5)
+        self.one_month_obv_trend_value_1.grid(row=10, column = 9, pady=5)
 
         self.three_month_obv_trend_text_1 = tk.Label(self.tab1, text=str("Three Month OBV Trend"))
-        self.three_month_obv_trend_text_1.grid(row=16, column = 8, pady=5)
+        self.three_month_obv_trend_text_1.grid(row=11, column = 8, pady=5)
         self.three_month_obv_trend_value_1 = tk.Label(self.tab1, text=str(self.trend_status[3]))
-        self.three_month_obv_trend_value_1.grid(row=16, column = 9, pady=5)
+        self.three_month_obv_trend_value_1.grid(row=11, column = 9, pady=5)
+
+        self.stock_gain_listbox_tab1 = tk.Listbox(self.tab1)
+        self.stock_gain_listbox_tab1.insert(tk.END, "stock_gain")
+        self.stock_gain_listbox_tab1.grid(row=13, column=8, rowspan = 10, pady=5)
 
 
         # Tab 2
@@ -93,6 +100,10 @@ class gui:
         self.csv_menu = tk.OptionMenu(self.tab2, self.csv_var, "total_stock_list", "industry_stock_list", "XLE-energy", "XLB-materials", "XLI-industrials", "XLP-consumer discretionary", "XLY-consumer staples", "XLV-health care", "XLF-financials", "XLK-technology", "XLC-telecommunication", "XLU-utilities", "XLRE-real estate")
         self.csv_menu.grid(row=1, column=3, pady=15)
 
+
+        self.label_img_2 = tk.Label(self.tab2, image=self.img_1)
+        self.label_img_2.image = self.img_1
+        self.label_img_2.grid(row=2, column=0, rowspan=19, columnspan = 6, pady=5)
 
         self.pull_list_status_label = tk.Label(self.tab2, text="Status: " + str(self.pull_list_stock), wraplength=150)
         self.pull_list_status_label.grid(row=1, column = 5, pady=15)
@@ -175,7 +186,7 @@ class gui:
             selected = False
 
         if selected == True and (self.pull_list_stock != old_stock):
-            self.plot_fig_tab2(self.pull_list_dict[self.pull_list_stock])
+            self.plot_fig_tab2()
             self.plot_stock_gain_tab2(self.pull_list_stock_gain_dict[self.pull_list_stock])
             self.one_month_trend_value_2.config(text=str(self.pull_list_trend_dict[self.pull_list_stock][0]))
             self.three_month_trend_value_2.config(text=str(self.pull_list_trend_dict[self.pull_list_stock][1]))
@@ -193,11 +204,14 @@ class gui:
         self.pull_list_status_label.config(text="Status: " + str(self.pull_list_stock))
 
 
-    def plot_fig_tab1(self, fig):
+    def plot_fig_tab1(self):
 
-        self.particle_canvas_tab1 = FigureCanvasTkAgg(fig, self.tab1)
-        # fig.tight_layout()
-        self.particle_canvas_tab1.get_tk_widget().grid(row=12, column=0, rowspan=15, columnspan = 7, pady=5)
+        # self.particle_canvas_tab1 = FigureCanvasTkAgg(fig, self.tab1)
+        # # fig.tight_layout()
+        # self.particle_canvas_tab1.get_tk_widget().grid(row=12, column=0, rowspan=15, columnspan = 7, pady=5)
+        photo = Image.open(os.path.join(self.pics_filepath, str(self.stock) + '.png'))
+        self.img_1 = ImageTk.PhotoImage(photo)
+        self.label_img.configure(image=self.img_1)
 
 
     def plot_stock_gain_tab1(self, stock_gain):
@@ -209,12 +223,11 @@ class gui:
         self.stock_gain_listbox_tab1.insert(tk.END, "Average gain: " + str(round(stock_gain[0].mean(),1)) + "%")
 
 
-    def plot_fig_tab2(self, fig):
+    def plot_fig_tab2(self):
 
-        self.particle_canvas_tab2 = FigureCanvasTkAgg(fig, self.tab2)
-        fig.tight_layout()
-        self.particle_canvas_tab2.get_tk_widget().grid(row=3, column=0, rowspan=10, columnspan = 7, pady=5)
-
+        photo = Image.open(os.path.join(self.pics_filepath, str(self.pull_list_stock) + '.png'))
+        self.img_2 = ImageTk.PhotoImage(photo)
+        self.label_img_2.configure(image=self.img_2)
 
     def plot_stock_gain_tab2(self, stock_gain):
 
