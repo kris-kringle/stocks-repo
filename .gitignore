@@ -4,4 +4,5 @@ build/
 dist/
 stocks.spec
 csv_files/
+pics/
 *.png
