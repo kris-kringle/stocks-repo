@@ -105,7 +105,7 @@ class gui:
         self.csv_var = tk.StringVar(self.tab2)
         self.csv_var.set(self.csv_variable)  # default value
 
-        self.csv_menu = tk.OptionMenu(self.tab2, self.csv_var, "total_stock_list", "industry_stock_list", "XLE-energy", "XLB-materials", "XLI-industrials", "XLP-consumer discretionary", "XLY-consumer staples", "XLV-health care", "XLF-financials", "XLK-technology", "XLC-telecommunication", "XLU-utilities", "XLRE-real estate")
+        self.csv_menu = tk.OptionMenu(self.tab2, self.csv_var, "total_stock_list", "industry_stock_list", "XLE-energy", "XLB-materials", "XLI-industrials", "XLP-consumer discretionary", "XLY-consumer staples", "XLV-health care", "XLF-financials", "XLK-technology", "XLC-telecommunication", "XLU-utilities", "XLRE-real estate", "portfolio", "zacks")
         self.csv_menu.grid(row=1, column=3, pady=15)
 
 

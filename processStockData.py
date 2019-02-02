@@ -38,21 +38,23 @@ class stock_data:
     def hist_prices(self, stock, end):
 
         self.stock = stock.upper()
+        # print("here1")
         try:
             self.stock_df = data.DataReader(self.stock, 'iex', self.start, end)
         except:
             print("ignore this stock 1---------------" + str(self.stock))
             return True
-
+        # print("here2")
         self.row, col = self.stock_df.shape
         if self.row < 100:
             print("not enough data" + str(self.stock))
             return True
-        print(self.stock_df.index[self.row - 1], str(end)[0:10])
+        # print(self.stock_df.index[self.row - 1], str(end)[0:10])
         if self.stock_df.index[self.row - 1] == str(end)[0:10]:
-            print("drop")
+            # print("drop")
             self.stock_df = self.stock_df.drop(self.stock_df.index[self.row - 1])
             self.row, col = self.stock_df.shape
+        # print("here3")
         if self.stock_df.index[self.row - 1] != str(end)[0:10]:
             stock_quote = iex.Stock(self.stock)
             try:
@@ -78,13 +80,18 @@ class stock_data:
                 f_day.index.name = 'date'
                 self.stock_df = self.stock_df.append(f_day.ix[0])
 
+        # print("here4")
         self.row, col = self.stock_df.shape
-
+        # print(self.stock_df)
+        if self.stock_df.isnull().values.any() == True:
+            print("nans in stockdf", stock)
+            return True
+        # print("here41")
         self.stock_df = self.stock_df.set_index(pd.to_datetime(self.stock_df.index))
         self.data_years = self.row - int(round(253 * self.pull_years, 0))
         self.stock_df['date'] = self.stock_df.index.map(mdates.date2num)
         self.stock_df['averaged_close'] = self.stock_df['close'].ewm(span=4, adjust=False).mean()
-
+        # print("here42")
         # calculate MACD parameters
         self.stock_df['ema12'] = self.stock_df['close'].ewm(span=30, adjust=False).mean()
         self.stock_df['ema26'] = self.stock_df['close'].ewm(span=65, adjust=False).mean()
@@ -96,16 +103,22 @@ class stock_data:
         self.stock_df['weekly_red'] = self.stock_df['weekly_black'].ewm(span=45, adjust=False).mean()
         self.stock_df['sma_26'] = self.stock_df['close'].rolling(window=26).mean()
         self.stock_df['ema_200'] = self.stock_df['close'].ewm(span=200, adjust=False).mean()
-
+        # print("here43")
         env_percent = .04
         self.stock_df['fit_env'] = 0
+        # pd.set_option('display.max_rows', 5000)
+
+
+        # print(self.stock_df['high'].isnull().values.any())
         while self.stock_df['fit_env'].mean() <= .9:
             self.stock_df['ema26_highenv'] = self.stock_df['ema26'] * (1 + env_percent)
             self.stock_df['ema26_lowenv'] = self.stock_df['ema26'] * (1 - env_percent)
             self.stock_df['fit_env'] = np.where((self.stock_df['ema26_highenv'] >= self.stock_df['high']) &
                                                 (self.stock_df['ema26_lowenv'] <= self.stock_df['low']), 1, 0)
+            # print(self.stock_df['fit_env'].mean())
             env_percent += .005
 
+        # print("here5")
         pd.options.mode.chained_assignment = None
         self.stock_df['obv_volume'] = 0
         self.stock_df['obv_volume'][0] = self.stock_df['volume'][0]
@@ -125,13 +138,17 @@ class stock_data:
 
 
         self.stock_df['close_from_top_env'] = self.stock_df['ema26_highenv'] - self.stock_df['close']
+        print(self.row)
         if self.row > 5:
             self.stock_df['daily_black_deriv'] = np.gradient(self.stock_df['daily_black'])
             self.stock_df['daily_red_deriv'] = np.gradient(self.stock_df['daily_red'])
             self.stock_df['weekly_black_deriv'] = np.gradient(self.stock_df['weekly_black'])
             self.stock_df['weekly_red_deriv'] = np.gradient(self.stock_df['weekly_red'])
             self.stock_df['ema_200_slope'] = np.gradient(self.stock_df['ema_200'])
-
+        elif self.row < 5:
+            print("gradient row error", str(self.stock))
+            return True
+        # print("here6")
         self.stock_df['decision'] = 0
         self.stock_df['stock-name'] = stock
         self.stock_df['performance'] = 0
@@ -139,6 +156,11 @@ class stock_data:
         self.short_stock_df = self.stock_df[self.data_years:]
         self.short_norm_stock_df = self.stock_df[self.data_years:]
         self.row, col = self.short_norm_stock_df.shape
+
+        if self.row < 5:
+            print("gradient row error", str(self.stock))
+            return True
+
         self.short_norm_stock_df['open'] = self.short_norm_stock_df['open'] / self.short_norm_stock_df['open'].max()
         self.short_norm_stock_df['high'] = self.short_norm_stock_df['high'] / self.short_norm_stock_df['high'].max()
         self.short_norm_stock_df['low'] = self.short_norm_stock_df['low'] / self.short_norm_stock_df['low'].max()
@@ -158,7 +180,7 @@ class stock_data:
 
         self.short_norm_stock_df['daily_black'] = self.short_norm_stock_df['daily_black'] / daily_max
         self.short_norm_stock_df['daily_red'] = self.short_norm_stock_df['daily_red'] / daily_max
-
+        # print("here7")
         weekly_max = self.short_norm_stock_df['weekly_black'].abs().max()
         if weekly_max < self.short_norm_stock_df['weekly_red'].abs().max():
             weekly_max = self.short_norm_stock_df['weekly_red'].abs().max()
@@ -166,6 +188,7 @@ class stock_data:
         self.short_norm_stock_df['weekly_black'] = self.short_norm_stock_df['weekly_black'] / weekly_max
         self.short_norm_stock_df['weekly_red'] = self.short_norm_stock_df['weekly_red'] / weekly_max
         self.short_norm_stock_df['fit_env'] = 0
+        self.env_percent = 0.04
         while self.short_norm_stock_df['fit_env'].mean() <= .95:
             self.short_norm_stock_df['ema26_highenv'] = self.short_norm_stock_df['ema26'] * (1 + self.env_percent)
             self.short_norm_stock_df['ema26_lowenv'] = self.short_norm_stock_df['ema26'] * (1 - self.env_percent)
@@ -207,7 +230,7 @@ class stock_data:
             self.short_norm_stock_df['weekly_black_deriv'] = self.short_norm_stock_df['weekly_black_deriv'] / weekly_slope_max
             self.short_norm_stock_df['weekly_red_deriv'] = self.short_norm_stock_df['weekly_red_deriv'] / weekly_slope_max
             self.short_norm_stock_df['weekly_slope_histogram'] = self.short_norm_stock_df['weekly_black_deriv'] - self.short_norm_stock_df['weekly_red_deriv']
-
+        # print("here8")
         return False
 
     def plot_chart(self):
@@ -236,6 +259,7 @@ class stock_data:
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['close'])
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['sma_26'])
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema_200'])
+        ax.fill_between(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema26']*(1 + self.env_percent/2), self.short_norm_stock_df['ema26']*(1 - self.env_percent/2), facecolor='purple', alpha=0.25)
 
         ax.set_title(self.stock + " - " + self.stock_name + "\nEnvelope: " + str(round(self.env_percent*100,1)) + " %" + "           " + self.last_gain + "           Avg. Volume: " + str("{:,}".format(int(self.avg_volume))))
         ax.grid(True, which='both')
@@ -311,8 +335,8 @@ class stock_data:
         if len(stock_gain) == 0:
             print("length zero")
             stock_gain = pd.DataFrame(data=[0])
-        print(round(stock_gain, 1))
-        print("Mean gain: ", round(stock_gain.mean(), 1), "%")
+        # print(round(stock_gain, 1))
+        # print("Mean gain: ", round(stock_gain.mean(), 1), "%")
 
         i = 0
         price_up = 0
@@ -321,14 +345,14 @@ class stock_data:
         ax.fill
         for i in range(1, self.row):
             if self.weekly_red_above_zero(i) == True and self.daily_red_above_zero(i) == True and self.price_above_EMA200(i) == True and self.obv_volume_slope_up(i) == True and self.EMA200_slope_up(i) == True:# and crossed_up == False:
-                if i + 1 != self.row:
-                    price_up = self.short_norm_stock_df['open'][i + 1]
-
-                    ax.axvline(x=i, color='green', linewidth=2, alpha=0.5)
-                    ax3.axvline(x=i, color='green', linewidth=2, alpha=0.5)
-                    ax4.axvline(x=i, color='green', linewidth=2, alpha=0.5)
-                    ax6.axvline(x=i, color='green', linewidth=2, alpha=0.5)
-                    bought = True
+                # if i + 1 != self.row:
+                    # price_up = self.short_norm_stock_df['open'][i + 1]
+                # print(i, self.short_norm_stock_df.index[i])
+                ax.axvline(x=i, color='green', linewidth=2, alpha=0.5)
+                ax3.axvline(x=i, color='green', linewidth=2, alpha=0.5)
+                ax4.axvline(x=i, color='green', linewidth=2, alpha=0.5)
+                ax6.axvline(x=i, color='green', linewidth=2, alpha=0.5)
+                    # bought = True
 
             # elif self.weekly_red_above_zero(i) == False and bought == True and crossed_up == True:
             #     ax.axvline(x=i, color='red', linewidth=2)
@@ -542,6 +566,6 @@ class stock_data:
 
     def price_above_EMA200(self, effective_row):
         passCriteria = False
-        if self.short_norm_stock_df['close'][effective_row] >= self.short_norm_stock_df['ema_200_slope'][effective_row]:
+        if self.short_norm_stock_df['close'][effective_row] >= self.short_norm_stock_df['ema_200'][effective_row]:
             passCriteria = True
         return passCriteria
