@@ -32,11 +32,22 @@ class stock_data:
         self.last_gain = ""
         self.stock_name = ""
         self.avg_volume = 0
+        self.rank1_hist = 0
+        self.rank2_hist = 0
+        self.rank3_hist = 0
+        self.rank4_hist = 0
+        self.rank5_hist = 0
+        self.zacks_total_params = 0
+
+        self.backtest_df = pd.DataFrame()
 
         self.trend_status = [None] * 6
 
     def hist_prices(self, stock, end):
 
+
+        print(self.stock)
+        print(self.stock)
         self.stock = stock.upper()
         # print("here1")
         try:
@@ -138,7 +149,7 @@ class stock_data:
 
 
         self.stock_df['close_from_top_env'] = self.stock_df['ema26_highenv'] - self.stock_df['close']
-        print(self.row)
+        # print(self.row)
         if self.row > 5:
             self.stock_df['daily_black_deriv'] = np.gradient(self.stock_df['daily_black'])
             self.stock_df['daily_red_deriv'] = np.gradient(self.stock_df['daily_red'])
@@ -257,9 +268,12 @@ class stock_data:
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema26_highenv'], color='purple', label='ema26_highenv', linewidth=1.0)
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema26_lowenv'], color='purple', label='ema26_lowenv', linewidth=1.0)
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['close'])
-        ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['sma_26'])
+        # ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['sma_26'])
+        ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['close'].ewm(span=8, adjust=False).mean())
+
         ax.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema_200'])
-        ax.fill_between(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema26']*(1 + self.env_percent/2), self.short_norm_stock_df['ema26']*(1 - self.env_percent/2), facecolor='purple', alpha=0.25)
+        ax.fill_between(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema26']*(1 + self.env_percent*.66), self.short_norm_stock_df['ema26']*(1 - self.env_percent*.66), facecolor='purple', alpha=0.15)
+        ax.fill_between(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['ema26']*(1 + self.env_percent*.33), self.short_norm_stock_df['ema26']*(1 - self.env_percent*.33), facecolor='purple', alpha=0.25)
 
         ax.set_title(self.stock + " - " + self.stock_name + "\nEnvelope: " + str(round(self.env_percent*100,1)) + " %" + "           " + self.last_gain + "           Avg. Volume: " + str("{:,}".format(int(self.avg_volume))))
         ax.grid(True, which='both')
@@ -285,7 +299,11 @@ class stock_data:
         ax2.xaxis.set_major_formatter(formatter)
         ax2.xaxis.set_ticklabels([])
 
-        ax3 = plt.axes([0.05, 0.35, 0.9, 0.1])
+        ax6 = plt.axes([0.05, 0.40, 0.9, 0.05])
+        ax6.plot(np.arange(len(self.short_norm_stock_df.index)), np.zeros(self.row), color='gray', label='gray')
+        ax6.get_yaxis().set_visible(False)
+
+        ax3 = plt.axes([0.05, 0.24, 0.9, 0.15])
         ax3.plot(np.arange(len(self.short_norm_stock_df.index)), np.zeros(self.row), color='gray', label='gray')
         ax3.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['daily_black'], color='black', label='black')
         ax3.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['daily_red'], color='red', label='red')
@@ -300,7 +318,7 @@ class stock_data:
         ax3.xaxis.set_major_formatter(formatter)
         ax3.xaxis.set_ticklabels([])
 
-        ax4 = plt.axes([0.05, 0.19, 0.9, 0.15])
+        ax4 = plt.axes([0.05, 0.08, 0.9, 0.15])
         ax4.plot(np.arange(len(self.short_norm_stock_df.index)), np.zeros(self.row), color='gray', label='gray')
         ax4.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['weekly_black'], color='black', label='black')
         ax4.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['weekly_red'], color='red', label='red')
@@ -314,22 +332,23 @@ class stock_data:
         ax4.tick_params(labelright=True)
         ax4.xaxis.set_major_formatter(formatter)
         ax4.xaxis.set_ticklabels([])
+        ax4.xaxis.set_major_formatter(formatter)
 
-        ax6 = plt.axes([0.05, 0.03, 0.9, 0.15])
-        ax6.xaxis.set_major_formatter(formatter)
-
-        ax6.plot(np.arange(len(self.short_norm_stock_df.index)), np.zeros(self.row), color='gray', label='gray')
-        ax6.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['weekly_black_deriv'])
-        ax6.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['weekly_red_deriv'])
-        ax6.bar(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['weekly_slope_histogram'].astype('float'), edgecolor='gray', color='gray', width=1)
-        ymin, ymax = ax6.get_ylim()
-        if abs(ymax) >= abs(ymin):
-            ax6lim = abs(ymax)
-        else:
-            ax6lim = abs(ymin)
-        ax6.set_ylim([-ax6lim, ax6lim])
-        ax6.grid(True, which='both')
-        ax6.tick_params(labelright=True)
+        # ax6 = plt.axes([0.05, 0.03, 0.9, 0.15])
+        # ax6.xaxis.set_major_formatter(formatter)
+        #
+        # ax6.plot(np.arange(len(self.short_norm_stock_df.index)), np.zeros(self.row), color='gray', label='gray')
+        # ax6.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['weekly_black_deriv'])
+        # ax6.plot(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['weekly_red_deriv'])
+        # ax6.bar(np.arange(len(self.short_norm_stock_df.index)), self.short_norm_stock_df['weekly_slope_histogram'].astype('float'), edgecolor='gray', color='gray', width=1)
+        # ymin, ymax = ax6.get_ylim()
+        # if abs(ymax) >= abs(ymin):
+        #     ax6lim = abs(ymax)
+        # else:
+        #     ax6lim = abs(ymin)
+        # ax6.set_ylim([-ax6lim, ax6lim])
+        # ax6.grid(True, which='both')
+        # ax6.tick_params(labelright=True)
 
         stock_gain = self.slope_crossover_history()
         if len(stock_gain) == 0:
@@ -351,7 +370,8 @@ class stock_data:
                 ax.axvline(x=i, color='green', linewidth=2, alpha=0.5)
                 ax3.axvline(x=i, color='green', linewidth=2, alpha=0.5)
                 ax4.axvline(x=i, color='green', linewidth=2, alpha=0.5)
-                ax6.axvline(x=i, color='green', linewidth=2, alpha=0.5)
+                # print("green", i)
+                # ax6.axvline(x=i, color='green', linewidth=2, alpha=0.5)
                     # bought = True
 
             # elif self.weekly_red_above_zero(i) == False and bought == True and crossed_up == True:
@@ -362,23 +382,24 @@ class stock_data:
             #     crossed_up = False
             #     bought = False
 
+
             elif self.weekly_red_above_zero(i) == True and self.daily_red_above_zero(i) == True and self.price_above_EMA200(i) == True and self.obv_volume_slope_up(i) == False and self.EMA200_slope_up(i) == True:
-                ax.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
-                ax3.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
-                ax4.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
-                ax6.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+                ax.axvline(x=i, color='red', linewidth=2, alpha=0.2)
+                ax3.axvline(x=i, color='red', linewidth=2, alpha=0.2)
+                ax4.axvline(x=i, color='red', linewidth=2, alpha=0.2)
+                # ax6.axvline(x=i, color='red', linewidth=2, alpha=0.2)
 
             elif self.weekly_red_above_zero(i) == True and self.daily_red_above_zero(i) == False and self.price_above_EMA200(i) == True and self.EMA200_slope_up(i) == True:
                 ax.axvline(x=i, color='yellow', linewidth=2, alpha=0.5)
                 ax3.axvline(x=i, color='yellow', linewidth=2, alpha=0.5)
                 ax4.axvline(x=i, color='yellow', linewidth=2, alpha=0.5)
-                ax6.axvline(x=i, color='yellow', linewidth=2, alpha=0.5)
+                # ax6.axvline(x=i, color='yellow', linewidth=2, alpha=0.5)
 
             elif self.weekly_red_above_zero(i) == False and self.daily_red_above_zero(i) == True and self.price_above_EMA200(i) == True  and self.obv_volume_slope_up(i) == True and self.EMA200_slope_up(i) == True:
                 ax.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
                 ax3.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
                 ax4.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
-                ax6.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
+                # ax6.axvline(x=i, color='lightgreen', linewidth=2, alpha=0.5)
 
             # elif self.weekly_red_above_zero(i) == False and self.daily_red_above_zero(i) == False and self.price_above_EMA200(i) == True  and self.EMA200_slope_up(i) == True:
             #     ax.axvline(x=i, color='red', linewidth=2, alpha=0.2)
@@ -419,6 +440,75 @@ class stock_data:
             # else:
             #     print(i, self.weekly_red_above_zero(i), self.daily_red_above_zero(i), self.price_above_EMA200(i), self.obv_volume_slope_up(i), self.EMA200_slope_up(i))
 
+        zacks_row, zacks_col = self.rank1_hist.shape
+        for a in range(0, zacks_row):
+            if self.rank1_hist[0][a] == self.stock:
+                zacks_loc_start = self.short_norm_stock_df.index.get_loc(self.rank1_hist[2][a])
+                zacks_loc_end = self.short_norm_stock_df.index.get_loc(self.rank1_hist[3][a])
+                print(zacks_loc_start, self.rank1_hist[2][a], zacks_loc_end, self.rank1_hist[3][a])
+                # ax6.axvline(x=zacks_loc_start, color='lime', linewidth=2)
+                for b in range(0, zacks_loc_end-zacks_loc_start + 1):
+                    if b == zacks_loc_end-zacks_loc_start and self.rank1_hist[1][a] == 'closed':
+                        print('skip lime')
+                    else:
+                        ax6.axvline(x=zacks_loc_start + b, color='lime', linewidth=2)
+
+        zacks_row, zacks_col = self.rank2_hist.shape
+        for a in range(0, zacks_row):
+            if self.rank2_hist[0][a] == self.stock:
+                zacks_loc_start = self.short_norm_stock_df.index.get_loc(self.rank2_hist[2][a])
+                zacks_loc_end = self.short_norm_stock_df.index.get_loc(self.rank2_hist[3][a])
+                print(zacks_loc_start, self.rank2_hist[2][a], zacks_loc_end, self.rank2_hist[3][a])
+                # ax6.axvline(x=zacks_loc_start, color='greenyellow', linewidth=2)
+                for b in range(0, zacks_loc_end-zacks_loc_start + 1):
+                    if b == zacks_loc_end-zacks_loc_start and self.rank2_hist[1][a] == 'closed':
+                        print('skip greenyellow')
+                    else:
+                        ax6.axvline(x=zacks_loc_start + b, color='greenyellow', linewidth=2)
+
+        zacks_row, zacks_col = self.rank3_hist.shape
+        for a in range(0, zacks_row):
+            if self.rank3_hist[0][a] == self.stock:
+                zacks_loc_start = self.short_norm_stock_df.index.get_loc(self.rank3_hist[2][a])
+                zacks_loc_end = self.short_norm_stock_df.index.get_loc(self.rank3_hist[3][a])
+                print(zacks_loc_start, self.rank3_hist[2][a], zacks_loc_end, self.rank3_hist[3][a])
+                # ax6.axvline(x=zacks_loc_start, color='gold', linewidth=2)
+                for b in range(0, zacks_loc_end-zacks_loc_start + 1):
+                    if b == zacks_loc_end-zacks_loc_start and self.rank3_hist[1][a] == 'closed':
+                        print('skip gold')
+                    else:
+                        print('gold')
+                        ax6.axvline(x=zacks_loc_start + b, color='gold', linewidth=2)
+
+        zacks_row, zacks_col = self.rank4_hist.shape
+        for a in range(0, zacks_row):
+            if self.rank4_hist[0][a] == self.stock:
+                zacks_loc_start = self.short_norm_stock_df.index.get_loc(self.rank4_hist[2][a])
+                zacks_loc_end = self.short_norm_stock_df.index.get_loc(self.rank4_hist[3][a])
+                print(zacks_loc_start, self.rank4_hist[2][a], zacks_loc_end, self.rank4_hist[3][a])
+                # ax6.axvline(x=zacks_loc_start, color='lightcoral', linewidth=2)
+                for b in range(0, zacks_loc_end-zacks_loc_start + 1):
+                    if b == zacks_loc_end-zacks_loc_start and self.rank4_hist[1][a] == 'closed':
+                        print('skip coral')
+                    else:
+                        print('coral')
+                        ax6.axvline(x=zacks_loc_start + b, color='lightcoral', linewidth=2)
+
+        zacks_row, zacks_col = self.rank5_hist.shape
+        for a in range(0, zacks_row):
+            if self.rank5_hist[0][a] == self.stock:
+                zacks_loc_start = self.short_norm_stock_df.index.get_loc(self.rank5_hist[2][a])
+                zacks_loc_end = self.short_norm_stock_df.index.get_loc(self.rank5_hist[3][a])
+                print(zacks_loc_start, self.rank5_hist[2][a], zacks_loc_end, self.rank5_hist[3][a])
+                # ax6.axvline(x=zacks_loc_start, color='red', linewidth=2)
+                for b in range(0, zacks_loc_end-zacks_loc_start + 1):
+                    if b == zacks_loc_end-zacks_loc_start and self.rank5_hist[1][a] == 'closed':
+                        print('skip red')
+                    else:
+                        print('red')
+                        ax6.axvline(x=zacks_loc_start + b, color='red', linewidth=2)
+
+
         plt.close(f1)
         f1.savefig(os.path.join(self.pics_filepath, str(self.stock) + '.png'))
 
@@ -428,26 +518,53 @@ class stock_data:
         crossed_up = False
         bought = False
         stock_gain = pd.DataFrame()
+
         price_up = 0
         percent = 3
         for i in range(1, self.row):
-            if self.weekly_red_above_zero(i) == True and self.obv_volume_slope_up(i) == True and self.EMA200_slope_up(i) == True and crossed_up == False:
+            if self.weekly_red_above_zero(i) == True and self.daily_red_above_zero(i) == True and self.price_above_EMA200(i) == True and self.obv_volume_slope_up(i) == True and self.EMA200_slope_up(i) == True and crossed_up == False and bought == False:
                 if i + 1 != self.row:
-                    price_up = self.short_norm_stock_df['open'][i+1]
+                    price_up = self.short_norm_stock_df['open'][i + 1]
                     bought = True
+                    print(self.short_norm_stock_df.index[i+1], price_up)
                 crossed_up = True
-            elif self.weekly_red_above_zero(i) == False and bought == True  and crossed_up == True: # (self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i)) and crossed_up == True:
-                # print(self.daily_red_above_zero(i), self.EMA200_slope_up(i))
-                price_down = self.short_norm_stock_df['close'][i]
-                if bought == True:
-                    stock_gain = stock_gain.append(pd.Series((price_down - price_up) / price_up), ignore_index=True)
-                crossed_up = False
-                bought = False
-                price_up = 0
+            elif bought == True and crossed_up == True and (self.weekly_red_above_zero(i) == False or self.daily_red_above_zero(i) == False or self.price_above_EMA200(i) == False or self.obv_volume_slope_up(i) == False or self.EMA200_slope_up(i) == False): # (self.weekly_black_slope_cross_below_zero(i) == True or self.weekly_black_slope_cross_below_red(i)) and crossed_up == True:
+                if i + 1 != self.row:
+                    price_down = self.short_norm_stock_df['open'][i + 1]
+                    if bought == True:
+                        stock_gain = stock_gain.append(pd.Series((price_down - price_up) / price_up), ignore_index=True)
+                        print(self.short_norm_stock_df.index[i+1], price_up, price_down, price_down - price_up, (price_down - price_up) / price_up)
+                    crossed_up = False
+                    bought = False
+                    price_up = 0
 
         stock_gain = stock_gain * 100
 
         return stock_gain
+
+    def backtest(self):
+        crossed_up = False
+        bought = False
+        # backtest_df = pd.DataFrame(columns=['date', 'stock', 'buy equity', 'cumulative equity', 'gain', 'cumulative gain', 'total equity','gain percentage'])
+
+        price_up = 0
+        for i in range(1, self.row):
+            if self.weekly_red_above_zero(i) == True and self.daily_red_above_zero(i) == True and self.price_above_EMA200(i) == True and self.obv_volume_slope_up(i) == True and self.EMA200_slope_up(i) == True and crossed_up == False and bought == False:
+                if self.short_norm_stock_df['ema26'][self.row - 1] * (1 - self.env_percent * .6) < self.short_norm_stock_df['close'][self.row - 1] <= self.short_norm_stock_df['ema26'][self.row - 1] * (1 + self.env_percent * .6):
+                    if i + 1 != self.row:
+                        price_up = self.short_norm_stock_df['open'][i + 1]
+                        backtest_stock_df = pd.DataFrame([[self.short_norm_stock_df.index[i+1], self.stock, 1, 0]])
+                        self.backtest_df = pd.concat([self.backtest_df, backtest_stock_df], axis=0)
+                        bought = True
+                    crossed_up = True
+            elif bought == True and crossed_up == True and (self.weekly_red_above_zero(i) == False or self.daily_red_above_zero(i) == False or self.price_above_EMA200(i) == False or self.obv_volume_slope_up(i) == False or self.EMA200_slope_up(i) == False):
+                if i + 1 != self.row:
+                    price_down = self.short_norm_stock_df['open'][i + 1]
+                    backtest_stock_df = pd.DataFrame([[self.short_norm_stock_df.index[i + 1], self.stock, -1, (price_down - price_up)*(1/price_up)]])
+                    self.backtest_df = pd.concat([self.backtest_df, backtest_stock_df], axis=0)
+                    crossed_up = False
+                    bought = False
+                    price_up = 0
 
     def weekly_black_slope_cross_below_red(self, effective_row):
         passCriteria = False
@@ -496,31 +613,12 @@ class stock_data:
             passCriteria = True
         return passCriteria
 
-    def check_trends(self, row1):
+    def get_zacks_params(self, stock):
 
-        trend_status = [None] * 8
+        temp_stock_params = self.zacks_total_params[self.zacks_total_params['Ticker'] == str(stock.upper())]
+        temp_stock_params = temp_stock_params.reset_index(drop=True)
 
-        if self.short_norm_stock_df['close'][row1 - 6:row1 - 1].mean() > self.short_norm_stock_df['close'][row1 - 20 - 6:row1 - 20 - 1].mean():
-            trend_status[0] = ' Up '
-        else:
-            trend_status[0] = 'Down'
-
-        if self.short_norm_stock_df['close'][row1 - 6:row1 - 1].mean() > self.short_norm_stock_df['close'][row1 - 60 - 6:row1 - 60 - 1].mean():
-            trend_status[1] = ' Up '
-        else:
-            trend_status[1] = 'Down'
-
-        if self.short_norm_stock_df['obv_volume'][row1 - 1] > self.short_norm_stock_df['obv_volume'][row1 - 20 - 1]:
-            trend_status[2] = ' Up '
-        else:
-            trend_status[2] = 'Down'
-
-        if self.short_norm_stock_df['obv_volume'][row1 - 1] > self.short_norm_stock_df['obv_volume'][row1 - 60 - 1]:
-            trend_status[3] = ' Up '
-        else:
-            trend_status[3] = 'Down'
-
-        return trend_status
+        return temp_stock_params
 
     def weekly_black_and_red_above_zero(self, effective_row):
         passCriteria = False
