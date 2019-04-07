@@ -29,7 +29,7 @@ class gui:
         self.pics_filepath = ""
 
 
-        self.stock = "DIA"
+        self.stock = "SPY"
         self.stock_gain = 0
 
         self.csv_variable = "zacks"
@@ -44,6 +44,9 @@ class gui:
         self.pull_list_trend_dict = {}
         self.pull_list_stock_gain_dict = {}
         self.pull_list_stock_zacks_params_dict = {}
+        self.market_performance = 0
+        self.stock_performance = 0
+        self.four_week_performance_dict = {}
 
 
         # Tab 1 - 1
@@ -125,9 +128,19 @@ class gui:
         self.eps_date_value_label = tk.Label(self.tab1, text=str(self.trend_status[3]))
         self.eps_date_value_label.grid(row=13, column = 9, pady=5)
 
+        self.stock_performance_label = tk.Label(self.tab1, text=str("4 Week Stock Gain %: "))
+        self.stock_performance_label.grid(row=14, column = 8, pady=5)
+        self.stock_performance_value_label = tk.Label(self.tab1, text=str(self.stock_performance))
+        self.stock_performance_value_label.grid(row=14, column = 9, pady=5)
+
+        self.market_performance_label = tk.Label(self.tab1, text=str("4 Week SPY Gain %: "))
+        self.market_performance_label.grid(row=15, column = 8, pady=5)
+        self.market_performance_value_label = tk.Label(self.tab1, text=str(self.market_performance))
+        self.market_performance_value_label.grid(row=15, column = 9, pady=5)
+
         self.stock_gain_listbox_tab1 = tk.Listbox(self.tab1)
         self.stock_gain_listbox_tab1.insert(tk.END, "stock_gain")
-        self.stock_gain_listbox_tab1.grid(row=14, column=8, rowspan = 10, pady=5)
+        self.stock_gain_listbox_tab1.grid(row=16, column=8, rowspan = 10, pady=5)
 
 
         # Tab 2
@@ -210,6 +223,16 @@ class gui:
         self.eps_date_value_label_2 = tk.Label(self.tab2, text=str(self.trend_status[3]))
         self.eps_date_value_label_2.grid(row=13, column = 7, pady=5)
 
+        self.stock_performance_label_2 = tk.Label(self.tab2, text=str("4 Week Stock Gain %: "))
+        self.stock_performance_label_2.grid(row=14, column = 6, pady=5)
+        self.stock_performance_value_label_2 = tk.Label(self.tab2, text=str(self.stock_performance))
+        self.stock_performance_value_label_2.grid(row=14, column = 7, pady=5)
+
+        self.market_performance_label_2 = tk.Label(self.tab2, text=str("4 Week SPY Gain %: "))
+        self.market_performance_label_2.grid(row=15, column = 6, pady=5)
+        self.market_performance_value_label_2 = tk.Label(self.tab2, text=str(self.market_performance))
+        self.market_performance_value_label_2.grid(row=15, column = 7, pady=5)
+
         self.buy_listbox = tk.Listbox(self.tab2, height=30)
         self.buy_listbox.grid(row=3, column=8, rowspan=10, padx=5, pady=15)
 
@@ -224,18 +247,18 @@ class gui:
         self.no_pull_list_button.grid(row=5, column=10, pady=5)
 
         self.yes_listbox = tk.Listbox(self.tab2, height=15)
-        self.yes_listbox.grid(row=14, column=8, padx=5, pady=15)
+        self.yes_listbox.grid(row=16, column=8, padx=5, pady=15)
         self.maybe_listbox = tk.Listbox(self.tab2, height=15)
-        self.maybe_listbox.grid(row=14, column=9, padx=5, pady=15)
+        self.maybe_listbox.grid(row=16, column=9, padx=5, pady=15)
         self.no_listbox = tk.Listbox(self.tab2, height=15)
-        self.no_listbox.grid(row=14, column=10, padx=5, pady=15)
+        self.no_listbox.grid(row=16, column=10, padx=5, pady=15)
 
         self.update_decisions_button = tk.Button(self.tab2, text="Save Decisions", command=self.save_stock_decisions)
-        self.update_decisions_button.grid(row=15, column=9, pady=15)
+        self.update_decisions_button.grid(row=17, column=9, pady=15)
 
         self.stock_gain_listbox_tab2 = tk.Listbox(self.tab2, height=15)
         self.stock_gain_listbox_tab2.insert(tk.END, "stock_gain")
-        self.stock_gain_listbox_tab2.grid(row=14, column=6, pady=15)
+        self.stock_gain_listbox_tab2.grid(row=16, column=6, pady=15)
 
         self.test_var = ""
 
@@ -318,6 +341,9 @@ class gui:
             self.VGM_score_value_label.config(text=str(self.temp_stock_params['VGM Score'][index_val]))
             self.industry_value_label.config(text=str(self.temp_stock_params['Zacks Industry Rank'][index_val]))
             self.eps_date_value_label.config(text=str(self.temp_stock_params['Next EPS Report Date '][index_val])[4:6] + '/' + str(self.temp_stock_params['Next EPS Report Date '][index_val])[6:8] + '/' + str(self.temp_stock_params['Next EPS Report Date '][index_val])[0:4])
+            self.stock_performance_value_label.config(text=str(self.stock_performance))
+            self.market_performance_value_label.config(text=str(self.market_performance))
+
 
         elif row_num == 0:
             self.earnings_esp_value_label.config(text='N/A')
@@ -370,7 +396,8 @@ class gui:
             self.VGM_score_value_label_2.config(text=str(zacks_temp['VGM Score'][index_val]))
             self.industry_value_label_2.config(text=str(zacks_temp['Zacks Industry Rank'][index_val]))
             self.eps_date_value_label_2.config(text=str(zacks_temp['Next EPS Report Date '][index_val])[4:6] + '/' + str(zacks_temp['Next EPS Report Date '][index_val])[6:8] + '/' + str(zacks_temp['Next EPS Report Date '][index_val])[0:4])
-
+            self.stock_performance_value_label_2.config(text=str(self.four_week_performance_dict[self.pull_list_stock]))
+            self.market_performance_value_label_2.config(text=str(self.market_performance))
 
         elif row_num == 0:
             self.earnings_esp_value_label_2.config(text='N/A')

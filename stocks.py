@@ -38,6 +38,8 @@ stock_params.zacks_total_params = stock_params.zacks_total_params.replace('', '0
 stock_params.zacks_total_params = stock_params.zacks_total_params.replace(np.NaN, '0')
 
 err = stock_params.hist_prices(my_gui.stock, my_gui.pull_date)
+test_row, test_col = stock_params.short_norm_stock_df.shape
+my_gui.market_performance = round(((stock_params.short_norm_stock_df['close'][test_row - 1] - stock_params.short_norm_stock_df['close'][test_row - 21]) / stock_params.short_norm_stock_df['close'][test_row - 21]) * 100,2)
 if err == False:
     stock_gain = stock_params.plot_chart()
     my_gui.plot_fig_tab1()
@@ -59,12 +61,11 @@ while True:
             err = stock_params.hist_prices(my_gui.stock, my_gui.pull_date)
             if err == False:
                 # stock_params.zacks_hist = pd.read_csv(os.path.join(csv_filepath, 'Top Stocks History.csv'), header=None)
+                my_gui.stock_performance = round(((stock_params.short_norm_stock_df['close'][stock_params.row - 1] -stock_params.short_norm_stock_df['close'][stock_params.row - 21]) /stock_params.short_norm_stock_df['close'][stock_params.row - 21]) * 100, 2)
                 stock_gain = stock_params.plot_chart()
                 my_gui.plot_stock_gain_tab1(stock_gain)
                 my_gui.temp_stock_params = stock_params.get_zacks_params(my_gui.stock)
                 my_gui.plot_fig_tab1()
-
-                # print(my_gui.temp_stock_params)
                 result = [stock_params.weekly_red_above_zero(stock_params.row - 1),
                           stock_params.daily_red_above_zero(stock_params.row - 1),
                           stock_params.price_above_EMA200(stock_params.row - 1),
@@ -106,16 +107,23 @@ while True:
                                         tested_stocks = tested_stocks.append(pd.Series(stock), ignore_index=True)
                                         zacks_array = stock_params.get_zacks_params(my_gui.pull_list_stock)
                                         zacks_above_zero = ((zacks_array[['% Change Q1 Est. (4 weeks)', '% Change Q2 Est. (4 weeks)', 'Last EPS Surprise (%)', 'Earnings ESP']]) >= 0).sum(axis=1)
-                                        print(zacks_above_zero)
-                                        print(zacks_above_zero[0])
-                                        if zacks_above_zero[0] >= 3:
+                                        zacks_analysts = zacks_array['# of Analysts in Q1 Consensus'][0]
+                                        if zacks_above_zero[0] >= 3 and zacks_analysts >= 3:
+                                            four_week_perf = round(((stock_params.short_norm_stock_df['close'][stock_params.row - 1] -stock_params.short_norm_stock_df['close'][stock_params.row - 21]) /stock_params.short_norm_stock_df['close'][stock_params.row - 21]) * 100, 2)
+                                            print(four_week_perf)
+                                            my_gui.four_week_performance_dict.update({stock: four_week_perf})
                                             my_gui.pull_list_stock_zacks_params_dict.update({stock: zacks_array})
+                                            print(my_gui.four_week_performance_dict)
                                             my_gui.update_buy_list()
                                             stock_gain = stock_params.plot_chart()
                                             my_gui.pull_list_stock_gain_dict.update({stock: stock_gain})
                     else:
                         tested_stocks = tested_stocks.append(pd.Series(stock), ignore_index=True)
                         my_gui.update_buy_list()
+                        four_week_perf = round(((stock_params.short_norm_stock_df['close'][stock_params.row - 1] -stock_params.short_norm_stock_df['close'][stock_params.row - 21]) /stock_params.short_norm_stock_df['close'][stock_params.row - 21]) * 100, 2)
+                        print(four_week_perf)
+                        my_gui.four_week_performance_dict.update({stock: four_week_perf})
+                        print(my_gui.four_week_performance_dict)
                         stock_gain = stock_params.plot_chart()
                         my_gui.pull_list_stock_zacks_params_dict.update({stock: stock_params.get_zacks_params(stock)})
                         my_gui.pull_list_stock_gain_dict.update({stock: stock_gain})

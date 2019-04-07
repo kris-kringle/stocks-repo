@@ -446,10 +446,9 @@ class stock_data:
                 zacks_loc_start = self.short_norm_stock_df.index.get_loc(self.rank1_hist[2][a])
                 zacks_loc_end = self.short_norm_stock_df.index.get_loc(self.rank1_hist[3][a])
                 print(zacks_loc_start, self.rank1_hist[2][a], zacks_loc_end, self.rank1_hist[3][a])
-                # ax6.axvline(x=zacks_loc_start, color='lime', linewidth=2)
                 for b in range(0, zacks_loc_end-zacks_loc_start + 1):
                     if b == zacks_loc_end-zacks_loc_start and self.rank1_hist[1][a] == 'closed':
-                        print('skip lime')
+                        pass
                     else:
                         ax6.axvline(x=zacks_loc_start + b, color='lime', linewidth=2)
 
@@ -459,10 +458,9 @@ class stock_data:
                 zacks_loc_start = self.short_norm_stock_df.index.get_loc(self.rank2_hist[2][a])
                 zacks_loc_end = self.short_norm_stock_df.index.get_loc(self.rank2_hist[3][a])
                 print(zacks_loc_start, self.rank2_hist[2][a], zacks_loc_end, self.rank2_hist[3][a])
-                # ax6.axvline(x=zacks_loc_start, color='greenyellow', linewidth=2)
                 for b in range(0, zacks_loc_end-zacks_loc_start + 1):
                     if b == zacks_loc_end-zacks_loc_start and self.rank2_hist[1][a] == 'closed':
-                        print('skip greenyellow')
+                        pass
                     else:
                         ax6.axvline(x=zacks_loc_start + b, color='greenyellow', linewidth=2)
 
@@ -472,12 +470,10 @@ class stock_data:
                 zacks_loc_start = self.short_norm_stock_df.index.get_loc(self.rank3_hist[2][a])
                 zacks_loc_end = self.short_norm_stock_df.index.get_loc(self.rank3_hist[3][a])
                 print(zacks_loc_start, self.rank3_hist[2][a], zacks_loc_end, self.rank3_hist[3][a])
-                # ax6.axvline(x=zacks_loc_start, color='gold', linewidth=2)
                 for b in range(0, zacks_loc_end-zacks_loc_start + 1):
                     if b == zacks_loc_end-zacks_loc_start and self.rank3_hist[1][a] == 'closed':
-                        print('skip gold')
+                        pass
                     else:
-                        print('gold')
                         ax6.axvline(x=zacks_loc_start + b, color='gold', linewidth=2)
 
         zacks_row, zacks_col = self.rank4_hist.shape
@@ -486,12 +482,10 @@ class stock_data:
                 zacks_loc_start = self.short_norm_stock_df.index.get_loc(self.rank4_hist[2][a])
                 zacks_loc_end = self.short_norm_stock_df.index.get_loc(self.rank4_hist[3][a])
                 print(zacks_loc_start, self.rank4_hist[2][a], zacks_loc_end, self.rank4_hist[3][a])
-                # ax6.axvline(x=zacks_loc_start, color='lightcoral', linewidth=2)
                 for b in range(0, zacks_loc_end-zacks_loc_start + 1):
                     if b == zacks_loc_end-zacks_loc_start and self.rank4_hist[1][a] == 'closed':
-                        print('skip coral')
+                        pass
                     else:
-                        print('coral')
                         ax6.axvline(x=zacks_loc_start + b, color='lightcoral', linewidth=2)
 
         zacks_row, zacks_col = self.rank5_hist.shape
@@ -500,12 +494,10 @@ class stock_data:
                 zacks_loc_start = self.short_norm_stock_df.index.get_loc(self.rank5_hist[2][a])
                 zacks_loc_end = self.short_norm_stock_df.index.get_loc(self.rank5_hist[3][a])
                 print(zacks_loc_start, self.rank5_hist[2][a], zacks_loc_end, self.rank5_hist[3][a])
-                # ax6.axvline(x=zacks_loc_start, color='red', linewidth=2)
                 for b in range(0, zacks_loc_end-zacks_loc_start + 1):
                     if b == zacks_loc_end-zacks_loc_start and self.rank5_hist[1][a] == 'closed':
-                        print('skip red')
+                        pass
                     else:
-                        print('red')
                         ax6.axvline(x=zacks_loc_start + b, color='red', linewidth=2)
 
 
