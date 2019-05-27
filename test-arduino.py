@@ -1,6 +1,7 @@
 import serialDevice as ser
 
-arduino = ser.serial_device('Arduino', baudrate=115200, send_end="#")
+serial_list = ["Arduino", "", "", "", "", 9600, None, False]
+arduino = ser.serial_device(serial_list)
 
 for i in range(1, 50):
 

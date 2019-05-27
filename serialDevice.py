@@ -4,15 +4,37 @@ import time
 
 class serial_device:
 
-    def __init__(self, description, send_start = "", send_end = "*", return_start = "", return_end = "*", baudrate = 9600, serialNumber = None):
+    def __init__(self, serialLinesUsed, *argv):
 
-        self.send_start_char = send_start
-        self.send_end_char = send_end
-        self.return_start_char = return_start
-        self.return_end_char = return_end
+        """
 
-        self.serial_com_port = self.grabPort(description, serialNumber)
-        self.ser = serial.Serial(self.serial_com_port, baudrate = baudrate, timeout = 2)
+        :param serialLinesUsed: Expected inputs are "single" and "multiple".  "single" is to communicate with multiple
+                devices on the same serial line.  "multiple" is to communicate with each device on individual serial lines.
+        :param argv: expected input is a list containing ["Device Serial Description", "Send Start Chars", "Send End Chars", "Receive Start Chars", "Receive End Chars", Baud Rate, Device Com Port Serial Number, Direction]
+                                                         [         "Arduino"         ,        "\01"       ,     "\r\n"     ,         "\01"        ,        "\r\n"      ,   9600   ,             None             ,     1    ]
+
+        """
+
+        self.serialLinesUsed = serialLinesUsed
+        self.num = len(argv)
+        self.send_start_char = [None] * self.num
+        self.send_end_char = [None] * self.num
+        self.return_start_char = [None] * self.num
+        self.return_end_char = [None] * self.num
+
+        i = 0
+        for arg in argv:
+            if self.serialLinesUsed == "single":
+                self.serial_com_port[0] = [self.grabPort(arg[0], arg[6])]
+                self.ser = serial.Serial(self.serial_com_port[0], baudrate=arg[5], timeout=2)
+            elif self.serialLinesUsed == "multiple":
+                self.serial_com_port[i] = [self.grabPort(arg[0], arg[6])]
+                self.ser = serial.Serial(self.serial_com_port[i], baudrate=arg[5], timeout=2)
+            self.send_start_char[i] = arg[1]
+            self.send_end_char[i] = arg[2]
+            self.return_start_char[i] = arg[3]
+            self.return_end_char[i] = arg[4]
+            i += 1
 
         time.sleep(1)
 
@@ -37,12 +59,21 @@ class serial_device:
         return my_port
 
 
-    def encoded_write(self, command):
+    def encoded_write(self, fargv, *argv):
 
-        self.ser.write((self.send_start_char + str(command) + self.send_end_char).encode('utf-8'))
+        command = fargv
+        i = 0
+        for arg in argv:
+            if self.serialLinesUsed == "single":
+                self.ser[0].write((self.send_start_char[i] + str(command) + str(arg) + self.send_end_char[i]).encode('utf-8'))
+            elif self.serialLinesUsed == "multiple":
+                self.ser[i].write((self.send_start_char[i] + str(command) + str(arg) + self.send_end_char[i]).encode('utf-8'))
+            i += 1
 
 
-    def decoded_read(self):
+    def decoded_read(self, *argv):
+
+        # make array for reading all variables, return entire array
 
         command_read = self.ser.read_until(self.return_end_char.encode('utf-8'))
         command_read = command_read.decode('utf-8')

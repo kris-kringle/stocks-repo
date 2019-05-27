@@ -11,7 +11,7 @@ rank2_history = pd.read_csv(os.path.join(csv_filepath, 'rank2_history.csv'), hea
 rank3_history = pd.read_csv(os.path.join(csv_filepath, 'rank3_history.csv'), header=None)
 rank4_history = pd.read_csv(os.path.join(csv_filepath, 'rank4_history.csv'), header=None)
 rank5_history = pd.read_csv(os.path.join(csv_filepath, 'rank5_history.csv'), header=None)
-rank_date = '2019-04-05'
+rank_date = '2019-05-24'
 current_rank = pd.read_csv(os.path.join(csv_filepath, 'zacks_custom_screen_' + rank_date + '.csv'), header=0)
 current_rank = current_rank.replace('', '0')
 current_rank = current_rank.replace(np.NaN, '0')
@@ -26,8 +26,6 @@ current_rank4 = current_rank[(current_rank['Zacks Rank'] == 4)]
 current_rank4 = current_rank4.reset_index(drop=True)
 current_rank5 = current_rank[(current_rank['Zacks Rank'] == 5)]
 current_rank5 = current_rank5.reset_index(drop=True)
-
-
 
 
 # Rank 1

@@ -7,6 +7,7 @@ import os
 from PIL import ImageTk, Image
 matplotlib.use('TkAgg')
 import pandas as pd
+import time
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class gui:
@@ -27,12 +28,14 @@ class gui:
         self.index = ""
         self.trend_status = [None] * 6
         self.pics_filepath = ""
-
+        self.csv_path = ""
+        self.get_zacks_params = 0
 
         self.stock = "SPY"
         self.stock_gain = 0
 
         self.csv_variable = "zacks"
+        self.pull_list_param_variable = "Inside envelope"
 
         self.now = dt.datetime.now()
         self.pull_list_date = str(dt.datetime(self.now.year, self.now.month, self.now.day))[0:10]
@@ -59,7 +62,7 @@ class gui:
         self.pull_stock_entry.grid(row=1, column=1, pady=5)
 
         self.pull_stock_date = tk.Entry(self.tab1)
-        self.pull_stock_date.insert(tk.END, self.pull_date)
+        # self.pull_stock_date.insert(tk.END, self.pull_date)
         self.pull_stock_date.bind('<Return>', self.update_pull_stock)
         self.pull_stock_date.grid(row=1, column=2, pady=5)
 
@@ -71,7 +74,7 @@ class gui:
         self.img_1 = ImageTk.PhotoImage(photo)
         self.label_img = tk.Label(self.tab1, image=self.img_1)
         self.label_img.image = self.img_1
-        self.label_img.grid(row=2, column=0, rowspan=19, columnspan = 6, pady=5)
+        self.label_img.grid(row=2, column=0, rowspan=22, columnspan = 6, pady=5)
 
         self.zacks_rank_label = tk.Label(self.tab1, text=str("Zacks Rank: "))
         self.zacks_rank_label.grid(row=3, column = 8, pady=5)
@@ -123,50 +126,68 @@ class gui:
         self.Q2_estimate_value_label = tk.Label(self.tab1, text=str(self.trend_status[3]))
         self.Q2_estimate_value_label.grid(row=12, column = 9, pady=5)
 
+        self.F1_estimate_label = tk.Label(self.tab1, text=str("F1 Estimate Change %: "))
+        self.F1_estimate_label.grid(row=13, column = 8, pady=5)
+        self.F1_estimate_value_label = tk.Label(self.tab1, text=str(self.trend_status[2]))
+        self.F1_estimate_value_label.grid(row=13, column = 9, pady=5)
+
+        self.F2_estimate_label = tk.Label(self.tab1, text=str("F2 Estimate Change %: "))
+        self.F2_estimate_label.grid(row=14, column = 8, pady=5)
+        self.F2_estimate_value_label = tk.Label(self.tab1, text=str(self.trend_status[3]))
+        self.F2_estimate_value_label.grid(row=14, column = 9, pady=5)
+
         self.eps_date_label = tk.Label(self.tab1, text=str("Next EPS Date: "))
-        self.eps_date_label.grid(row=13, column = 8, pady=5)
+        self.eps_date_label.grid(row=15, column = 8, pady=5)
         self.eps_date_value_label = tk.Label(self.tab1, text=str(self.trend_status[3]))
-        self.eps_date_value_label.grid(row=13, column = 9, pady=5)
+        self.eps_date_value_label.grid(row=15, column = 9, pady=5)
 
         self.stock_performance_label = tk.Label(self.tab1, text=str("4 Week Stock Gain %: "))
-        self.stock_performance_label.grid(row=14, column = 8, pady=5)
+        self.stock_performance_label.grid(row=16, column = 8, pady=5)
         self.stock_performance_value_label = tk.Label(self.tab1, text=str(self.stock_performance))
-        self.stock_performance_value_label.grid(row=14, column = 9, pady=5)
+        self.stock_performance_value_label.grid(row=16, column = 9, pady=5)
 
         self.market_performance_label = tk.Label(self.tab1, text=str("4 Week SPY Gain %: "))
-        self.market_performance_label.grid(row=15, column = 8, pady=5)
+        self.market_performance_label.grid(row=17, column = 8, pady=5)
         self.market_performance_value_label = tk.Label(self.tab1, text=str(self.market_performance))
-        self.market_performance_value_label.grid(row=15, column = 9, pady=5)
+        self.market_performance_value_label.grid(row=17, column = 9, pady=5)
+
+        self.sector_label = tk.Label(self.tab1, text=str("Sector: "))
+        self.sector_label.grid(row=18, column = 8, pady=5)
+        self.sector_value_label = tk.Label(self.tab1, text=str(self.market_performance))
+        self.sector_value_label.grid(row=18, column = 9, pady=5)
 
         self.stock_gain_listbox_tab1 = tk.Listbox(self.tab1)
         self.stock_gain_listbox_tab1.insert(tk.END, "stock_gain")
-        self.stock_gain_listbox_tab1.grid(row=16, column=8, rowspan = 10, pady=5)
+        self.stock_gain_listbox_tab1.grid(row=19, column=8, rowspan = 10, pady=5)
 
 
         # Tab 2
         self.pull_list_date_label = tk.Label(self.tab2, text=str("Pull List Date"))
         self.pull_list_date_label.grid(row=1, column = 1, pady=15)
         self.pull_list_date_entry = tk.Entry(self.tab2)
-        self.pull_list_date_entry.insert(tk.END, self.pull_list_date)
+        # self.pull_list_date_entry.insert(tk.END, self.pull_list_date)
         self.pull_list_date_entry.bind('<Return>', self.update_pull_list_date)
         self.pull_list_date_entry.grid(row=1, column=2, pady=15)
         self.pull_list_date_button = tk.Button(self.tab2, text="Enter")
         self.pull_list_date_button.bind('<Button 1>', self.update_pull_list_date)
-        self.pull_list_date_button.grid(row=1, column=4, pady=15)
+        self.pull_list_date_button.grid(row=1, column=5, pady=15)
 
         self.csv_var = tk.StringVar(self.tab2)
         self.csv_var.set(self.csv_variable)  # default value
-
         self.csv_menu = tk.OptionMenu(self.tab2, self.csv_var, "total_stock_list", "industry_stock_list", "XLE-energy", "XLB-materials", "XLI-industrials", "XLP-consumer discretionary", "XLY-consumer staples", "XLV-health care", "XLF-financials", "XLK-technology", "XLC-telecommunication", "XLU-utilities", "XLRE-real estate", "portfolio", "zacks", "zacks test")
         self.csv_menu.grid(row=1, column=3, pady=15)
 
+        self.pull_list_param_var = tk.StringVar(self.tab2)
+        self.pull_list_param_var.set(self.pull_list_param_variable)
+        self.pull_list_param_menu = tk.OptionMenu(self.tab2, self.pull_list_param_var, "Inside envelope", "Inside 50%")
+        self.pull_list_param_menu.grid(row=1, column=4, pady=15)
 
         self.label_img_2 = tk.Label(self.tab2, image=self.img_1)
         self.label_img_2.image = self.img_1
         self.label_img_2.grid(row=2, column=0, rowspan=19, columnspan = 6, pady=5)
 
         self.pull_list_status_label = tk.Label(self.tab2, text="Status: " + str(self.pull_list_stock), wraplength=150)
-        self.pull_list_status_label.grid(row=1, column = 5, pady=15)
+        self.pull_list_status_label.grid(row=1, column = 6, pady=15)
 
         self.zacks_rank_label_2 = tk.Label(self.tab2, text=str("Zacks Rank: "))
         self.zacks_rank_label_2.grid(row=3, column=6, padx=5, pady=5)
@@ -218,26 +239,41 @@ class gui:
         self.Q2_estimate_value_label_2 = tk.Label(self.tab2, text=str(self.trend_status[3]))
         self.Q2_estimate_value_label_2.grid(row=12, column=7, pady=5)
 
+        self.F1_estimate_label_2 = tk.Label(self.tab2, text=str("F1 Estimate Change %: "))
+        self.F1_estimate_label_2.grid(row=13, column=6, pady=5)
+        self.F1_estimate_value_label_2 = tk.Label(self.tab2, text=str(self.trend_status[2]))
+        self.F1_estimate_value_label_2.grid(row=13, column=7, pady=5)
+
+        self.F2_estimate_label_2 = tk.Label(self.tab2, text=str("F2 Estimate Change %: "))
+        self.F2_estimate_label_2.grid(row=14, column=6, pady=5)
+        self.F2_estimate_value_label_2 = tk.Label(self.tab2, text=str(self.trend_status[3]))
+        self.F2_estimate_value_label_2.grid(row=14, column=7, pady=5)
+
         self.eps_date_label_2 = tk.Label(self.tab2, text=str("Next EPS Date: "))
-        self.eps_date_label_2.grid(row=13, column = 6, pady=5)
+        self.eps_date_label_2.grid(row=15, column = 6, pady=5)
         self.eps_date_value_label_2 = tk.Label(self.tab2, text=str(self.trend_status[3]))
-        self.eps_date_value_label_2.grid(row=13, column = 7, pady=5)
+        self.eps_date_value_label_2.grid(row=15, column = 7, pady=5)
 
         self.stock_performance_label_2 = tk.Label(self.tab2, text=str("4 Week Stock Gain %: "))
-        self.stock_performance_label_2.grid(row=14, column = 6, pady=5)
+        self.stock_performance_label_2.grid(row=16, column = 6, pady=5)
         self.stock_performance_value_label_2 = tk.Label(self.tab2, text=str(self.stock_performance))
-        self.stock_performance_value_label_2.grid(row=14, column = 7, pady=5)
+        self.stock_performance_value_label_2.grid(row=16, column = 7, pady=5)
 
         self.market_performance_label_2 = tk.Label(self.tab2, text=str("4 Week SPY Gain %: "))
-        self.market_performance_label_2.grid(row=15, column = 6, pady=5)
+        self.market_performance_label_2.grid(row=17, column = 6, pady=5)
         self.market_performance_value_label_2 = tk.Label(self.tab2, text=str(self.market_performance))
-        self.market_performance_value_label_2.grid(row=15, column = 7, pady=5)
+        self.market_performance_value_label_2.grid(row=17, column = 7, pady=5)
+
+        self.sector_label_2 = tk.Label(self.tab2, text=str("Sector: "))
+        self.sector_label_2.grid(row=18, column = 8, pady=5)
+        self.sector_value_label_2 = tk.Label(self.tab2, text=str(self.market_performance))
+        self.sector_value_label_2.grid(row=18, column = 9, pady=5)
 
         self.buy_listbox = tk.Listbox(self.tab2, height=30)
-        self.buy_listbox.grid(row=3, column=8, rowspan=10, padx=5, pady=15)
+        self.buy_listbox.grid(row=3, column=8, rowspan=14, padx=5, pady=15)
 
         self.sell_listbox = tk.Listbox(self.tab2, height=30)
-        self.sell_listbox.grid(row=3, column=9, rowspan=10, padx=5, pady=15)
+        self.sell_listbox.grid(row=3, column=9, rowspan=14, padx=5, pady=15)
 
         self.yes_pull_list_button = tk.Button(self.tab2, text="Yes", command=self.update_yes_pull_list)
         self.yes_pull_list_button.grid(row=3, column=10, pady=5)
@@ -247,18 +283,18 @@ class gui:
         self.no_pull_list_button.grid(row=5, column=10, pady=5)
 
         self.yes_listbox = tk.Listbox(self.tab2, height=15)
-        self.yes_listbox.grid(row=16, column=8, padx=5, pady=15)
+        self.yes_listbox.grid(row=19, column=8, padx=5, pady=15)
         self.maybe_listbox = tk.Listbox(self.tab2, height=15)
-        self.maybe_listbox.grid(row=16, column=9, padx=5, pady=15)
+        self.maybe_listbox.grid(row=19, column=9, padx=5, pady=15)
         self.no_listbox = tk.Listbox(self.tab2, height=15)
-        self.no_listbox.grid(row=16, column=10, padx=5, pady=15)
+        self.no_listbox.grid(row=19, column=10, padx=5, pady=15)
 
         self.update_decisions_button = tk.Button(self.tab2, text="Save Decisions", command=self.save_stock_decisions)
-        self.update_decisions_button.grid(row=17, column=9, pady=15)
+        self.update_decisions_button.grid(row=20, column=9, pady=15)
 
         self.stock_gain_listbox_tab2 = tk.Listbox(self.tab2, height=15)
         self.stock_gain_listbox_tab2.insert(tk.END, "stock_gain")
-        self.stock_gain_listbox_tab2.grid(row=16, column=6, pady=15)
+        self.stock_gain_listbox_tab2.grid(row=19, column=6, pady=15)
 
         self.test_var = ""
 
@@ -274,6 +310,7 @@ class gui:
         maybe_index = self.maybe_listbox.curselection()
         no_index = self.no_listbox.curselection()
         self.csv_variable = self.csv_var.get()
+        self.pull_list_param_variable = self.pull_list_param_var.get()
         selected = False
         old_stock = self.pull_list_stock
         if len(buy_index) > 0:
@@ -294,24 +331,11 @@ class gui:
         else:
             selected = False
 
-        # temp_stock_params = self.zacks_total_params[self.zacks_total_params['Ticker'] == str(self.stock.upper())]
-        # temp_stock_params.reset_index(drop=True)
-
 
 
         if selected == True and (self.pull_list_stock != old_stock):
             self.plot_fig_tab2()
             self.plot_stock_gain_tab2(self.pull_list_stock_gain_dict[self.pull_list_stock])
-            # self.one_month_trend_value_2.config(text=str(self.pull_list_trend_dict[self.pull_list_stock][0]))
-            # self.three_month_trend_value_2.config(text=str(self.pull_list_trend_dict[self.pull_list_stock][1]))
-            # self.one_month_obv_trend_value_2.config(text=str(self.pull_list_trend_dict[self.pull_list_stock][2]))
-            # self.three_month_obv_trend_value_2.config(text=str(self.pull_list_trend_dict[self.pull_list_stock][3]))
-
-
-        # self.one_month_trend_value_1.config(text=str(self.trend_status[0]))
-        # self.three_month_trend_value_1.config(text=str(self.trend_status[1]))
-        # self.one_month_obv_trend_value_1.config(text=str(self.trend_status[2]))
-        # self.three_month_obv_trend_value_1.config(text=str(self.trend_status[3]))
 
 
     def update_pull_list_status(self):
@@ -334,6 +358,8 @@ class gui:
             self.last_earnings_esp_value_label.config(text=str(self.temp_stock_params['Last EPS Surprise (%)'][index_val]))
             self.Q1_estimate_value_label.config(text=str(self.temp_stock_params['% Change Q1 Est. (4 weeks)'][index_val]))
             self.Q2_estimate_value_label.config(text=str(self.temp_stock_params['% Change Q2 Est. (4 weeks)'][index_val]))
+            self.F1_estimate_value_label.config(text=str(self.temp_stock_params['% Change F1 Est. (4 weeks)'][index_val]))
+            self.F2_estimate_value_label.config(text=str(self.temp_stock_params['% Change F2 Est. (4 weeks)'][index_val]))
             self.zacks_rank_value_label.config(text=str(self.temp_stock_params['Zacks Rank'][index_val]))
             self.value_score_value_label.config(text=str(self.temp_stock_params['Value Score'][index_val]))
             self.growth_score_value_label.config(text=str(self.temp_stock_params['Growth Score'][index_val]))
@@ -343,6 +369,7 @@ class gui:
             self.eps_date_value_label.config(text=str(self.temp_stock_params['Next EPS Report Date '][index_val])[4:6] + '/' + str(self.temp_stock_params['Next EPS Report Date '][index_val])[6:8] + '/' + str(self.temp_stock_params['Next EPS Report Date '][index_val])[0:4])
             self.stock_performance_value_label.config(text=str(self.stock_performance))
             self.market_performance_value_label.config(text=str(self.market_performance))
+            self.sector_value_label.config(text=str(self.temp_stock_params['Sector'][index_val]))
 
 
         elif row_num == 0:
@@ -350,6 +377,8 @@ class gui:
             self.last_earnings_esp_value_label.config(text='N/A')
             self.Q1_estimate_value_label.config(text='N/A')
             self.Q2_estimate_value_label.config(text='N/A')
+            self.F1_estimate_value_label.config(text='N/A')
+            self.F2_estimate_value_label.config(text='N/A')
             self.zacks_rank_value_label.config(text='N/A')
             self.value_score_value_label.config(text='N/A')
             self.growth_score_value_label.config(text='N/A')
@@ -357,6 +386,7 @@ class gui:
             self.VGM_score_value_label.config(text='N/A')
             self.industry_value_label.config(text='N/A')
             self.eps_date_value_label.config(text='N/A')
+            self.sector_value_label.config(text='N/A')
 
 
     def plot_stock_gain_tab1(self, stock_gain):
@@ -374,8 +404,6 @@ class gui:
         self.img_2 = ImageTk.PhotoImage(photo)
         self.label_img_2.configure(image=self.img_2)
 
-
-
         zacks_temp = self.pull_list_stock_zacks_params_dict[self.pull_list_stock]
 
         row_num, garbage_col = zacks_temp.shape
@@ -389,6 +417,8 @@ class gui:
             self.last_earnings_esp_value_label_2.config(text=str(zacks_temp['Last EPS Surprise (%)'][index_val]))
             self.Q1_estimate_value_label_2.config(text=str(zacks_temp['% Change Q1 Est. (4 weeks)'][index_val]))
             self.Q2_estimate_value_label_2.config(text=str(zacks_temp['% Change Q2 Est. (4 weeks)'][index_val]))
+            self.F1_estimate_value_label_2.config(text=str(zacks_temp['% Change F1 Est. (4 weeks)'][index_val]))
+            self.F2_estimate_value_label_2.config(text=str(zacks_temp['% Change F2 Est. (4 weeks)'][index_val]))
             self.zacks_rank_value_label_2.config(text=str(zacks_temp['Zacks Rank'][index_val]))
             self.value_score_value_label_2.config(text=str(zacks_temp['Value Score'][index_val]))
             self.growth_score_value_label_2.config(text=str(zacks_temp['Growth Score'][index_val]))
@@ -398,12 +428,15 @@ class gui:
             self.eps_date_value_label_2.config(text=str(zacks_temp['Next EPS Report Date '][index_val])[4:6] + '/' + str(zacks_temp['Next EPS Report Date '][index_val])[6:8] + '/' + str(zacks_temp['Next EPS Report Date '][index_val])[0:4])
             self.stock_performance_value_label_2.config(text=str(self.four_week_performance_dict[self.pull_list_stock]))
             self.market_performance_value_label_2.config(text=str(self.market_performance))
+            self.sector_value_label_2.config(text=str(zacks_temp['Sector'][index_val]))
 
         elif row_num == 0:
             self.earnings_esp_value_label_2.config(text='N/A')
-            self.last_earnings_esp_value_2_label.config(text='N/A')
+            self.last_earnings_esp_value_label_2.config(text='N/A')
             self.Q1_estimate_value_label_2.config(text='N/A')
             self.Q2_estimate_value_label_2.config(text='N/A')
+            self.F1_estimate_value_label_2.config(text='N/A')
+            self.F2_estimate_value_label_2.config(text='N/A')
             self.zacks_rank_value_label_2.config(text='N/A')
             self.value_score_value_label_2.config(text='N/A')
             self.growth_score_value_label_2.config(text='N/A')
@@ -411,6 +444,7 @@ class gui:
             self.VGM_score_value_label_2.config(text='N/A')
             self.industry_value_label_2.config(text='N/A')
             self.eps_date_value_label_2.config(text='N/A')
+            self.sector_value_label_2.config(text='N/A')
 
     def plot_stock_gain_tab2(self, stock_gain):
 
@@ -430,6 +464,17 @@ class gui:
         self.maybe_listbox.delete(0, tk.END)
         self.no_listbox.delete(0, tk.END)
         self.state = "pull list"
+        self.get_zacks_params = pd.read_csv(os.path.join(self.csv_path, 'zacks_custom_screen_' + self.pull_list_date + '.csv'), header=0)
+        self.get_zacks_params = self.get_zacks_params.replace('', '0')
+        self.get_zacks_params = self.get_zacks_params.replace(np.NaN, '0')
+
+    def update_pull_list_date_only(self):
+        self.pull_list_date_entry.insert(tk.END, self.pull_list_date)
+        # self.pull_list_date = self.pull_list_date_entry.get()
+
+    def update_pull_date_only(self):
+        self.pull_stock_date.insert(tk.END, self.pull_date)
+        # self.pull_date = self.pull_date_entry.get()
 
     def update_backtest(self, event):
 
@@ -440,6 +485,9 @@ class gui:
         self.stock = self.pull_stock_entry.get()
         self.pull_date = self.pull_stock_date.get()
         self.state = "pull"
+        self.get_zacks_params = pd.read_csv(os.path.join(self.csv_path, 'zacks_custom_screen_' + self.pull_date + '.csv'), header=0)
+        self.get_zacks_params = self.get_zacks_params.replace('', '0')
+        self.get_zacks_params = self.get_zacks_params.replace(np.NaN, '0')
 
 
     def update_yes_pull_list(self):
